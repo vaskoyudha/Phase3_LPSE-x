@@ -47,3 +47,6 @@ demo_casebook.html
 
 # Local assistant context
 AGENTS.md
+
+# pnpm stuff
+pnpm-lock.yaml
