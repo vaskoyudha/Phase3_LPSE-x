@@ -21,7 +21,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from src.api_schemas import (
@@ -38,6 +38,8 @@ from src.api_schemas import (
     ReviewRecord,
     ReviewUpdateRequest,
     StaticCasebookResponse,
+    UploadedPackageInferenceStatus,
+    UploadedPackageScoreResponse,
 )
 from src.casebook import DEFAULT_STATIC_CASEBOOK_PATH, build_casebook, render_static_casebook_html
 from src.product_demo import (
@@ -51,6 +53,11 @@ from src.product_demo import (
     normalize_region_key,
 )
 from src.reviews import DEFAULT_REVIEW_STATUS, REVIEW_STATUSES, ReviewStore, utc_now_iso
+from src.uploaded_packages import (
+    UploadedPackageValidationError,
+    build_uploaded_package_scores,
+    generate_template_csv,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
@@ -1346,6 +1353,29 @@ def _review_counts(items: list[ReviewRecord]) -> dict[str, int]:
     return counts
 
 
+def _uploaded_package_response(result: Any) -> UploadedPackageScoreResponse:
+    metadata = result.metadata
+    status = UploadedPackageInferenceStatus(**asdict(metadata))
+    return UploadedPackageScoreResponse(
+        upload_id=metadata.upload_id,
+        rows_received=metadata.rows_received,
+        rows_scored=metadata.rows_scored,
+        source_split=metadata.source_split,
+        eval_claim_scope=metadata.eval_claim_scope,
+        model_artifact=metadata.model_artifact,
+        model_backend=metadata.model_backend,
+        feature_source=metadata.feature_source,
+        raw_source=metadata.raw_source,
+        no_cloud_call=metadata.no_cloud_call,
+        no_live_scraping=metadata.no_live_scraping,
+        no_retraining=metadata.no_retraining,
+        items=result.items,
+        warnings=result.warnings,
+        inference_status=status,
+        guardrail=metadata.guardrail,
+    )
+
+
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     model_artifact: str | None = None
@@ -1681,6 +1711,32 @@ def static_casebook_status() -> StaticCasebookResponse:
         primary_export_route="/api/casebook/{case_id}/export.html",
         guardrail=SAFE_GUARDRAIL_ID,
     )
+
+
+@app.get("/api/uploads/tender-packages/template", response_model=None)
+def tender_package_upload_template() -> Response:
+    return Response(
+        content=generate_template_csv(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=lpse-x-tender-packages-template.csv"},
+    )
+
+
+@app.post("/api/uploads/tender-packages", response_model=UploadedPackageScoreResponse)
+async def upload_tender_packages(request: Request) -> UploadedPackageScoreResponse:
+    payload = await request.body()
+    try:
+        result = build_uploaded_package_scores(payload)
+        return _uploaded_package_response(result)
+    except UploadedPackageValidationError as exc:
+        detail = dict(exc.detail)
+        detail["guardrail"] = SAFE_GUARDRAIL_ID
+        raise HTTPException(status_code=400, detail=detail) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": _safe_error(exc), "guardrail": SAFE_GUARDRAIL_ID},
+        ) from exc
 
 
 @app.get("/assets/{asset_path:path}")

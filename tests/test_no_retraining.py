@@ -7,6 +7,7 @@ PRODUCT_SURFACES = [
     PROJECT_ROOT / "src" / "product_demo.py",
     PROJECT_ROOT / "src" / "casebook.py",
     PROJECT_ROOT / "src" / "api.py",
+    PROJECT_ROOT / "src" / "uploaded_packages.py",
 ]
 
 

@@ -429,3 +429,54 @@ def test_api_does_not_mutate_model_artifacts():
     client.get('/api/archive?page_size=2')
     after = {path: path.stat().st_mtime_ns for path in artifacts}
     assert after == before
+
+VALID_UPLOAD_CSV = """tender_title,tender_description,buyer_name,supplier_name,tender_value_amount,award_value_amount,tender_datePublished,tender_procurementMethod,tender_mainProcurementCategory,ocid,tender_id,buyer_id,supplier_id,tender_status,award_date,currency
+Pembangunan jalan desa,Paket pekerjaan konstruksi jalan desa,Dinas PUPR Kabupaten Sleman,PT Maju Jaya,1500000000,1480000000,2025-01-15,open,works,ocds-upload-1,TDR-1,BYR-1,SUP-1,complete,2025-02-20,IDR
+Pengadaan laptop sekolah,Pengadaan perangkat laptop untuk sekolah,Dinas Pendidikan Kota Bandung,CV Teknologi Nusantara,750000000,760000000,2025-02-11,open,goods,ocds-upload-2,TDR-2,BYR-2,SUP-2,complete,2025-03-10,IDR
+"""
+
+def test_upload_template_endpoint_returns_csv_template():
+    response = client.get("/api/uploads/tender-packages/template")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "tender_title,tender_description,buyer_name" in response.text
+    assert "Pembangunan jalan desa" in response.text
+
+def test_upload_tender_packages_scores_uploaded_csv_without_retraining():
+    response = client.post(
+        "/api/uploads/tender-packages",
+        content=VALID_UPLOAD_CSV.encode("utf-8"),
+        headers={"content-type": "text/csv"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["rows_received"] == 2
+    assert payload["rows_scored"] == 2
+    assert payload["source_split"] == "uploaded_csv"
+    assert payload["eval_claim_scope"] == "uploaded_scoring_only"
+    assert payload["feature_source"] == "uploaded_csv"
+    assert payload["raw_source"] == "uploaded_csv"
+    assert payload["no_retraining"] is True
+    assert payload["no_cloud_call"] is True
+    assert payload["no_live_scraping"] is True
+    assert len(payload["items"]) == 2
+    assert payload["items"][0]["source_split"] == "uploaded_csv"
+    assert payload["items"][0]["eval_claim_scope"] == "uploaded_scoring_only"
+    assert payload["items"][0]["is_heldout"] is False
+    assert "bukan tuduhan pelanggaran" in payload["guardrail"]
+
+def test_upload_tender_packages_rejects_missing_required_column():
+    csv_text = VALID_UPLOAD_CSV.replace("supplier_name,", "")
+    response = client.post(
+        "/api/uploads/tender-packages",
+        content=csv_text.encode("utf-8"),
+        headers={"content-type": "text/csv"},
+    )
+
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail["error"] == "missing_required_columns"
+    assert detail["missing_columns"] == ["supplier_name"]
+    assert "guardrail" in detail

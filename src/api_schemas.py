@@ -115,6 +115,49 @@ class ArchiveInferenceStatus(BaseModel):
     guardrail: str
 
 
+class UploadedPackageInferenceStatus(BaseModel):
+    upload_id: str
+    model_artifact: str
+    model_backend: str
+    inference_mode: str = "offline_local"
+    feature_source: str
+    raw_source: str
+    source_split: str
+    eval_claim_scope: str
+    rows_received: int
+    rows_scored: int
+    rows_ranked: int
+    data_load_latency_ms: float
+    feature_latency_ms: float
+    model_load_latency_ms: float
+    prediction_latency_ms: float
+    queue_build_latency_ms: float
+    total_latency_ms: float
+    no_cloud_call: bool = True
+    no_live_scraping: bool = True
+    no_retraining: bool = True
+    guardrail: str
+
+
+class UploadedPackageScoreResponse(BaseModel):
+    upload_id: str
+    rows_received: int
+    rows_scored: int
+    source_split: str
+    eval_claim_scope: str
+    model_artifact: str
+    model_backend: str
+    feature_source: str
+    raw_source: str
+    no_cloud_call: bool = True
+    no_live_scraping: bool = True
+    no_retraining: bool = True
+    items: list[dict[str, Any]]
+    warnings: list[str]
+    inference_status: UploadedPackageInferenceStatus
+    guardrail: str
+
+
 class MonthlyRiskTrendItem(BaseModel):
     month: str
     tinggi: int
