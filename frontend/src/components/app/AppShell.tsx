@@ -1,8 +1,9 @@
 import { type ReactNode, useState } from 'react';
-import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, SidebarSimple, SlidersHorizontal, SquaresFour, X } from '@phosphor-icons/react';
+import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, SidebarSimple, SlidersHorizontal, SquaresFour, UserCircle, X } from '@phosphor-icons/react';
 import { BrandMark } from '../shared/BrandMark';
+import { operatorProfile, operatorInitials } from '../../data/operatorProfile';
 
-export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'not-found';
+export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'profile' | 'not-found';
 
 export type Navigate = (href: string) => void;
 
@@ -94,7 +95,7 @@ export function AppShell({ active, title, onNavigate, children, dashboardNav, pa
             );
           })}
         </nav>
-        <p className="safe-copy app-sidebar__guardrail">triase risiko · prioritas review · bukan tuduhan pelanggaran</p>
+        <SidebarProfile onNavigate={navigate} active={active} />
       </aside>
       {sidebarOpen && <button className="app-sidebar__scrim" aria-label="Dismiss sidebar" type="button" onClick={() => setSidebarOpen(false)} />}
 
@@ -185,5 +186,50 @@ export function AppShell({ active, title, onNavigate, children, dashboardNav, pa
         </div>
       </div>
     </div>
+  );
+}
+
+type AuthProfile = {
+  email?: string;
+  fullName?: string;
+};
+
+function readStoredAuth(): AuthProfile | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const session = window.localStorage.getItem('lpse-x:auth') ?? window.sessionStorage.getItem('lpse-x:auth');
+    if (!session) return null;
+    const parsed = JSON.parse(session) as { email?: string };
+    return parsed?.email ? { email: parsed.email } : null;
+  } catch {
+    return null;
+  }
+}
+
+function SidebarProfile({ onNavigate, active }: { onNavigate: (href: string) => void; active: AppRouteKey }) {
+  const initials = operatorInitials();
+  const isActive = active === 'profile';
+  const auth = readStoredAuth();
+  const subtitle = auth?.email ?? operatorProfile.role;
+
+  return (
+    <a
+      href="/profile"
+      className="app-sidebar__profile"
+      aria-label={`Open ${operatorProfile.name} operator profile`}
+      aria-current={isActive ? 'page' : undefined}
+      onClick={(event) => {
+        event.preventDefault();
+        onNavigate('/profile');
+      }}
+    >
+      <span className="app-sidebar__profile-avatar" aria-hidden="true">
+        {initials || <UserCircle size={18} weight="fill" />}
+      </span>
+      <span className="app-sidebar__profile-meta">
+        <strong title={operatorProfile.name}>{operatorProfile.name}</strong>
+        <small title={subtitle}>{subtitle}</small>
+      </span>
+    </a>
   );
 }
