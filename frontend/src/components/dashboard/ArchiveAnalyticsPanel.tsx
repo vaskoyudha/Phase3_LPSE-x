@@ -67,7 +67,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
   }
 
   return (
-    <section className="card" style={styles.shell} aria-label="Archive analytics charts">
+    <section className="archive-analytics-panel" style={styles.shell} aria-label="Archive analytics charts">
       <div style={styles.header}>
         <div>
           <h2 style={styles.title}>Full Archive Risk Analytics</h2>
@@ -90,7 +90,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
               <Metric icon={<ShieldCheck size={15} />} label="Held-out filtered" value={formatNumber(analytics?.coverage_proof.filtered_heldout_rows)} />
             </div>
             <div style={styles.zoneStateGrid}>
-              <div style={styles.stateRiskCard}>
+              <div className="card" style={styles.stateRiskCard}>
                 <div style={styles.panelHeader}>
                   <h3 style={styles.panelTitle}><PieChart size={17} color="#D7D1B0" /> Komposisi Risiko</h3>
                   <span style={styles.note}>filter-safe buttons</span>
@@ -109,7 +109,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
         <h3 style={styles.zoneHeading}>Where to focus</h3>
         {initialLoading ? <ZoneSkeleton height={320} label="Loading focus zone" /> : (
           <div style={styles.zoneFocusGrid}>
-            <article style={{ ...styles.panel, minWidth: 0 }}>
+            <article className="card" style={{ ...styles.panel, minWidth: 0 }}>
               <div style={styles.panelHeader}>
                 <h3 style={styles.panelTitle}><Target size={17} color="#c9c1b4" /> Risk Tier × Contract Value Matrix</h3>
                 <span style={styles.caveatChip}>{loading ? <ChartLoadingBadge label="Loading matrix" /> : analytics?.priority_map_meta.is_capped ? 'bounded sample · true mix first' : 'all matched visible'}</span>
@@ -209,7 +209,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
             </article>
 
             <aside style={styles.focusAside}>
-              <div style={styles.top5List}>
+              <div className="card" style={styles.top5List}>
                 <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 760, color: 'var(--lp-text-soft)' }}>Top 5 Priority</h4>
                 {topPoints.map((point, index) => {
                   const tier = RISK_TIERS.find((t) => point.risk_label.includes(t.short)) ?? RISK_TIERS[1];
@@ -236,7 +236,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
 
         <TopPatternsCard patterns={topPatterns} loading={initialLoading} />
 
-        <section data-testid="analytics-zone-drill" data-zone="drill" style={styles.panel}>
+        <section className="card" data-testid="analytics-zone-drill" data-zone="drill" style={styles.panel}>
           <h3 style={{ ...styles.panelTitle, marginBottom: 10 }}><MapPinned size={17} color="#D7D1B0" /> Concentration drill-down</h3>
           <RegionalBuyerTabs
             regional={analytics?.regional_concentration ?? []}
@@ -262,7 +262,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
 
 function TopPatternsCard({ patterns, loading }: { patterns: TopPatterns | null; loading: boolean }) {
   return (
-    <article role="region" aria-label="Top Patterns" style={styles.panel}>
+    <article className="card" role="region" aria-label="Top Patterns" style={styles.panel}>
       <div style={styles.panelHeader}>
         <h3 style={styles.panelTitle}><UsersRound size={17} color="#D7D1B0" /> Top Patterns</h3>
         <span style={styles.note}>archive summary</span>
@@ -295,7 +295,7 @@ function PatternMetric({ label, value }: { label: string; value: string }) {
 
 function SelectedPriorityDetail({ point, onOpen }: { point: ArchivePriorityPoint; onOpen: (point: ArchivePriorityPoint) => void }) {
   return (
-    <section role="region" aria-label="Selected priority point detail" style={styles.detailCard}>
+    <section className="card" role="region" aria-label="Selected priority point detail" style={styles.detailCard}>
       <div style={styles.panelHeader}>
         <h4 style={styles.detailTitle}>Selected priority point</h4>
         <span style={styles.note}>rank {point.filtered_rank.toLocaleString('id-ID')}</span>
@@ -610,17 +610,17 @@ function fromLogValue(value: number) {
 }
 
 const styles: Record<string, CSSProperties> = {
-  shell: { padding: 16, display: 'grid', gap: 12, overflow: 'hidden', background: 'var(--lp-panel)' },
+  shell: { display: 'grid', gap: 14, overflow: 'visible', background: 'transparent' },
   header: { display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'start' },
   title: { margin: '7px 0 3px', fontSize: 22, lineHeight: 1.05, letterSpacing: '-.035em' },
   muted: { margin: 0, color: 'var(--lp-muted)', fontSize: 12, lineHeight: 1.35, maxWidth: 720 },
   zoneState: { display: 'grid', gap: 12 },
   zoneHeading: { margin: 0, fontSize: 15, lineHeight: 1.1, letterSpacing: '-.02em' },
   kpiRow: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(110px, 1fr))', gap: 8 },
-  zoneStateGrid: { display: 'grid', gridTemplateColumns: '35% 1fr', gap: 16 },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 },
-  panel: { minWidth: 0, padding: 12, border: '1px solid rgba(255,255,255,.075)', borderRadius: 'var(--lp-radius-md)', background: 'rgba(255,255,255,.035)', overflow: 'hidden' },
-  stateRiskCard: { minWidth: 0, padding: 12, border: '1px solid rgba(255,255,255,.075)', borderRadius: 'var(--lp-radius-md)', background: 'rgba(255,255,255,.035)', overflow: 'hidden' },
+  zoneStateGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 14 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14 },
+  panel: { minWidth: 0, padding: 14, border: '1px solid rgba(215,209,176,.14)', borderRadius: 'var(--lp-radius-md)', background: 'var(--lp-panel)', overflow: 'hidden' },
+  stateRiskCard: { minWidth: 0, padding: 14, border: '1px solid rgba(215,209,176,.14)', borderRadius: 'var(--lp-radius-md)', background: 'var(--lp-panel)', overflow: 'hidden' },
   priorityPanel: { gridColumn: '1 / -1' },
   panelHeader: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', marginBottom: 8 },
   panelTitle: { margin: 0, display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 15, lineHeight: 1.1 },
@@ -668,12 +668,12 @@ const styles: Record<string, CSSProperties> = {
    error: { margin: 0, color: '#E05A4F', border: '1px solid rgba(224,90,79,.3)', borderRadius: 16, padding: 10, background: 'rgba(224,90,79,.1)' },
    empty: { margin: 0, minHeight: 80, display: 'grid', placeItems: 'center', color: 'var(--lp-muted)', textAlign: 'center', fontSize: 12 },
   trustFooter: { display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', fontSize: 12, opacity: 0.78, color: 'var(--lp-text-soft)', flexWrap: 'wrap' },
-  zoneFocusGrid: { display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 },
+  zoneFocusGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 14 },
   focusAside: { minWidth: 280, display: 'grid', gap: 10, alignContent: 'start' },
-  top5List: { padding: 12, border: '1px solid rgba(255,255,255,.075)', borderRadius: 'var(--lp-radius-md)', background: 'rgba(255,255,255,.035)', display: 'grid', gap: 6, alignContent: 'start' },
+  top5List: { padding: 14, border: '1px solid rgba(215,209,176,.14)', borderRadius: 'var(--lp-radius-md)', background: 'var(--lp-panel)', display: 'grid', gap: 6, alignContent: 'start' },
   top5Row: { display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left' as const, padding: '7px 9px', borderRadius: 14, color: 'var(--lp-text-soft)', cursor: 'pointer', border: '1px solid rgba(255,255,255,.06)', background: 'rgba(255,255,255,.03)', transition: 'background .15s' },
   top5Rank: { width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: 999, fontSize: 10, fontWeight: 820, color: 'var(--lp-bg-deep)', background: 'var(--lp-cream)', flexShrink: 0 },
-  detailCard: { display: 'grid', gap: 8, padding: 12, border: '1px solid rgba(215,209,176,.18)', borderRadius: 'var(--lp-radius-md)', background: 'rgba(215,209,176,.055)' },
+  detailCard: { display: 'grid', gap: 8, padding: 14, border: '1px solid rgba(215,209,176,.18)', borderRadius: 'var(--lp-radius-md)', background: 'var(--lp-panel)' },
   detailTitle: { margin: 0, color: 'var(--lp-text-soft)', fontSize: 13, lineHeight: 1.15 },
   detailHeadline: { color: 'var(--lp-text)', fontSize: 12, lineHeight: 1.25 },
   detailGrid: { display: 'grid', gap: 6 },

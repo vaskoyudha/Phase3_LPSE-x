@@ -258,7 +258,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
     let alive = true;
     const params = new URLSearchParams();
     params.set('page', String(datasetPage));
-    params.set('page_size', '10');
+    params.set('page_size', '100');
     if (filters.risk && filters.risk !== 'all') params.set('risk', filters.risk);
     if (filters.search.trim()) params.set('search', filters.search.trim());
     if (filters.buyer) params.set('buyer', filters.buyer);
@@ -736,7 +736,7 @@ function ArchiveRailCards({ dataset, splitFilter, sort, selectedRegionKey }: { d
   const cards = [
     { label: 'Matched rows', value: formatNumber(dataset?.matched_count), note: 'sesuai filter aktif', Icon: CheckCircle, tone: 'var(--lp-emerald)' },
     { label: 'Total archive', value: formatNumber(dataset?.total_rows), note: dataset?.archive_scope ?? 'all local prepared data', Icon: Database, tone: 'var(--lp-cream)' },
-    { label: 'Rows per page', value: formatNumber(dataset?.page_size), note: 'tabel arsip tetap 10 baris', Icon: Stack, tone: 'var(--lp-cream)' },
+    { label: 'Rows per page', value: formatNumber(dataset?.page_size), note: 'kontrak arsip lokal', Icon: Stack, tone: 'var(--lp-cream)' },
     { label: 'Split view', value: splitFilter === 'all' ? 'Semua split' : splitFilter, note: sort === 'risk_desc' ? 'urut risiko tertinggi' : 'sort aktif', Icon: Funnel, tone: 'var(--lp-amber)' },
   ];
 
@@ -1085,8 +1085,8 @@ const styles: Record<string, CSSProperties> = {
     overflow: 'hidden',
     position: 'relative',
     backgroundImage: `url(${dashboardSectionIntroBackground})`,
-    backgroundPosition: 'center',
-    backgroundSize: 'cover',
+    backgroundPosition: 'calc(50% - 18px) center',
+    backgroundSize: 'calc(100% + 44px) auto',
     border: '1px solid rgba(255, 255, 255, 0.46)',
     outline: '1px solid rgba(215, 209, 176, 0.28)',
     outlineOffset: '-3px',
