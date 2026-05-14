@@ -16,8 +16,13 @@ review_data/
 *.sqlite3
 *.db
 
-# Frontend/backend implementation surfaces intentionally excluded at repo root
-/frontend/
+# Frontend generated artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+
+# Root generated artifacts
 /node_modules/
 /dist/
 /build/
@@ -27,6 +32,9 @@ review_data/
 # Environment
 .env
 
+# Generated demo/static artifacts
+demo_casebook.html
+
 # OS/editor
 .DS_Store
 .idea/
@@ -34,4 +42,8 @@ review_data/
 
 # Local/runtime artifacts
 .codex/
+.kiro/
 *.pyc
+
+# Local assistant context
+AGENTS.md
