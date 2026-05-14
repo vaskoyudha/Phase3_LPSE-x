@@ -987,7 +987,7 @@ test('RiskDistributionChart prefers actual filtered archive counts over visible 
 });
 
 
-test('CommandCenterPage requests the full archive with page_size=100 and no stale test split copy', async () => {
+test('CommandCenterPage requests the full archive with page_size=10 and no stale test split copy', async () => {
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
     const url = String(input);
     if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
@@ -1001,7 +1001,7 @@ test('CommandCenterPage requests the full archive with page_size=100 and no stal
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/^\/api\/archive\?/)));
   const archiveUrl = fetchMock.mock.calls.map(([input]) => String(input)).find((url) => url.startsWith('/api/archive?'));
   expect(archiveUrl).toBeTruthy();
-  expect(new URLSearchParams(archiveUrl!.split('?')[1]).get('page_size')).toBe('100');
+  expect(new URLSearchParams(archiveUrl!.split('?')[1]).get('page_size')).toBe('10');
   expect(new URLSearchParams(archiveUrl!.split('?')[1]).get('sort')).toBe('risk_desc');
   expect(fetchMock.mock.calls.map(([input]) => String(input)).some((url) => url.startsWith('/api/archive/analytics?') && new URLSearchParams(url.split('?')[1]).get('sort') === 'risk_desc')).toBe(true);
   expect(await screen.findByText('Full Archive Risk Analytics')).toBeInTheDocument();
@@ -1075,7 +1075,7 @@ test('RiskQueueTable keeps command-center cockpit compact with ten-row pages', (
 });
 
 
-test('CommandCenterPage requests archive pages at the 100-row contract size without refetching analytics on pagination', async () => {
+test('CommandCenterPage requests archive pages at the 10-row table size without refetching analytics on pagination', async () => {
   const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
     const url = String(input);
     if (url.startsWith('/api/archive/analytics')) {
@@ -1092,11 +1092,11 @@ test('CommandCenterPage requests archive pages at the 100-row contract size with
 
   render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="archive" onSelect={() => undefined} onOpenCasebook={() => undefined} />);
 
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&sort=risk_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=10&sort=risk_desc'));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive/analytics?sort=risk_desc'));
   const analyticsCallsBefore = fetchMock.mock.calls.filter(([input]) => String(input).startsWith('/api/archive/analytics')).length;
   fireEvent.click(screen.getByLabelText('Next page'));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=100&sort=risk_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=10&sort=risk_desc'));
   const analyticsCallsAfter = fetchMock.mock.calls.filter(([input]) => String(input).startsWith('/api/archive/analytics')).length;
   expect(analyticsCallsAfter).toBe(analyticsCallsBefore);
   fetchMock.mockRestore();
@@ -1113,15 +1113,15 @@ test('Archive table search filters archive requests and resets pagination', asyn
 
   render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="archive" onSelect={() => undefined} onOpenCasebook={() => undefined} />);
 
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&sort=risk_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=10&sort=risk_desc'));
   fireEvent.click(screen.getByLabelText('Next page'));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=100&sort=risk_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=10&sort=risk_desc'));
 
   fireEvent.click(screen.getByText('Held-out'));
   fireEvent.change(screen.getByLabelText('Archive sort'), { target: { value: 'value_desc' } });
   fireEvent.change(screen.getByLabelText('Search archive table'), { target: { value: 'Lingkar' } });
 
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&search=Lingkar&split=test_data&sort=value_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=10&search=Lingkar&split=test_data&sort=value_desc'));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive/analytics?search=Lingkar&split=test_data&sort=value_desc'));
   fetchMock.mockRestore();
 });
@@ -1146,7 +1146,7 @@ test('Archive analytics risk composition filters risk and priority map jumps to 
   })).toBe(true));
 
   fireEvent.click(screen.getByRole('button', { name: /archive page 3/i }));
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=3&page_size=100&risk=Risiko+Tinggi&sort=risk_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=3&page_size=10&risk=Risiko+Tinggi&sort=risk_desc'));
   expect(onSelect).toHaveBeenCalledWith(queueItem.case_id);
 });
 

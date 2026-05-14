@@ -46,7 +46,7 @@ def test_command_center_uses_archive_monthly_trend_contract_without_client_demo_
     trend_chart = (FRONTEND / 'components' / 'dashboard' / 'RiskTrendChart.tsx').read_text(encoding='utf-8')
     filter_rail = (FRONTEND / 'components' / 'dashboard' / 'FilterRail.tsx').read_text(encoding='utf-8')
 
-    assert "params.set('page_size', '100')" in command_center
+    assert "params.set('page_size', String(ARCHIVE_PAGE_SIZE))" in command_center
     assert 'function buildTrend' not in command_center
     assert 'buildTrend(' not in command_center
     assert 'monthly_risk_trend' in command_center

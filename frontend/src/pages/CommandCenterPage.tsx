@@ -43,6 +43,7 @@ const INFERENCE_PANEL_ID = 'dashboard-inference-panel';
 const SELECTED_CASE_PANEL_ID = 'dashboard-selected-case-panel';
 const RIGHT_RAIL_STICKY_TOP = 104;
 const RIGHT_RAIL_STICKY_BOTTOM = 0;
+const ARCHIVE_PAGE_SIZE = 10;
 export type DashboardTab = 'overview' | 'archive' | 'analytics' | 'locations' | 'activity';
 
 type DashboardTabDefinition = {
@@ -258,7 +259,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
     let alive = true;
     const params = new URLSearchParams();
     params.set('page', String(datasetPage));
-    params.set('page_size', '100');
+    params.set('page_size', String(ARCHIVE_PAGE_SIZE));
     if (filters.risk && filters.risk !== 'all') params.set('risk', filters.risk);
     if (filters.search.trim()) params.set('search', filters.search.trim());
     if (filters.buyer) params.set('buyer', filters.buyer);
@@ -1156,7 +1157,7 @@ const styles: Record<string, CSSProperties> = {
   },
   regionSummaryRank: { color: 'var(--lp-cream)', fontWeight: 840, fontSize: 10, letterSpacing: '.08em', alignSelf: 'center' },
   regionSummaryItemBody: { display: 'grid', gap: 2, minWidth: 0 },
-  regionSummaryName: { all: 'unset', cursor: 'pointer', color: 'var(--lp-text)', fontSize: 11, fontWeight: 700, lineHeight: 1.12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const },
+  regionSummaryName: { all: 'unset', cursor: 'pointer', color: 'var(--lp-text)', fontSize: 11, fontWeight: 700, lineHeight: 1.12, display: 'block', overflowWrap: 'anywhere' },
   regionSummaryMeta: { color: 'var(--lp-muted)', fontSize: 10, lineHeight: 1.22 },
   regionSummaryBar: { position: 'absolute' as const, bottom: 0, left: 0, height: 2, borderRadius: 999, opacity: 0.7 },
   regionSummaryNote: { margin: 0, color: 'var(--lp-muted)', fontSize: 10, lineHeight: 1.35 },

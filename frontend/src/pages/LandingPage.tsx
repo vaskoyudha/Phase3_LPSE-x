@@ -91,7 +91,7 @@ const proofBlocks = [
 const honestyClaims = [
   {
     icon: <XCircle size={18} weight="fill" />,
-    title: 'Bukan keputusan hukum',
+    title: 'Bukan putusan akhir',
     body: 'Output adalah prioritas review, bukan tuduhan.',
   },
   {
