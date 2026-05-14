@@ -300,3 +300,21 @@ export interface ArchiveRegionMapMeta {
   map_granularity?: 'kabupaten_kota';
   note: string;
 }
+
+export interface ArchiveCoverageProof {
+  archive_scope: string;
+  total_rows: number;
+  matched_count: number;
+  train_rows: number;
+  heldout_rows: number;
+  filtered_train_rows: number;
+  filtered_heldout_rows: number;
+  source_splits: string[];
+  feature_sources: string[];
+  raw_sources: string[];
+  eval_claim_note: string;
+  archive_display_note: string;
+  no_cloud_call: boolean;
+  no_live_scraping: boolean;
+  no_retraining: boolean;
+}
