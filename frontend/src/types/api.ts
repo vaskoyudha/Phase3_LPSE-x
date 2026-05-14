@@ -105,3 +105,14 @@ export interface QueueItem {
   buyer_region_key?: string;
   region_key?: string;
 }
+
+export interface QueueResponse {
+  summary: Record<string, number>;
+  distribution: Array<{ label: string; count: number }>;
+  trend: Array<{ bucket: string; average_priority: number; review_count: number }>;
+  items: QueueItem[];
+  matched_count: number | null;
+  inference_status: InferenceStatus | null;
+  guardrail: string;
+  demo_case_id: string | null;
+}
