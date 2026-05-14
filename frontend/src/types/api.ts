@@ -352,3 +352,34 @@ export type ReviewStatus =
   | 'Ditandai Risiko'
   | 'Clear / Tidak Prioritas'
   | 'Selesai';
+
+export interface ReviewRecord {
+  case_id: string;
+  status: ReviewStatus;
+  reviewer_name: string;
+  notes: string;
+  decision_summary: string;
+  package_snapshot: Record<string, string | number | boolean | null>;
+  model_snapshot: Record<string, string | number | boolean | null>;
+  prefill: {
+    rationale?: string;
+    model_interpretation?: string;
+    checklist?: string[];
+    top_drivers?: Array<Record<string, string | number | boolean | null>>;
+    safety_note?: string;
+  };
+  created_at: string | null;
+  updated_at: string | null;
+  signed_off_at: string | null;
+  is_saved: boolean;
+  event_count: number;
+  history: Array<Record<string, string | number | boolean | null>>;
+  guardrail: string;
+}
+
+export interface ReviewListResponse {
+  statuses: ReviewStatus[];
+  counts: Record<string, number>;
+  items: ReviewRecord[];
+  guardrail: string;
+}
