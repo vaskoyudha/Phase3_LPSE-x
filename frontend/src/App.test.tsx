@@ -872,3 +872,47 @@ test('InferenceStatusCard keeps local scoring status compact', () => {
   expect(screen.queryByText(/No retraining/)).not.toBeInTheDocument();
 });
 
+test('RiskQueueTable keeps command-center cockpit compact with top-25 pages', () => {
+  const items = Array.from({ length: 12 }, (_, index) => ({
+    ...queueItem,
+    case_id: `${index + 1}:ocds-a`,
+    risk_rank: index + 1,
+    package_title: `Paket Prioritas ${String(index + 1).padStart(2, '0')}`,
+    predicted_label: index < 3 ? 'Risiko Tinggi' : 'Risiko Sedang',
+  }));
+  render(<RiskQueueTable items={items} selectedId={items[0].case_id} onSelect={() => undefined} />);
+
+  expect(screen.getByText('Paket Prioritas 12')).toBeInTheDocument();
+  expect(screen.queryByText('Paket Prioritas 13')).not.toBeInTheDocument();
+  expect(screen.getByText(/Menampilkan 1–12 dari 12 paket antrean lokal/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '›' })).toBeDisabled();
+});
+
+
+test('CommandCenterPage requests archive pages at the 100-row contract size without refetching analytics on pagination', async () => {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+    const url = String(input);
+    if (url.startsWith('/api/archive/analytics')) {
+      return Promise.resolve(new Response(JSON.stringify(archiveAnalyticsResponse), { status: 200 }));
+    }
+    if (url.startsWith('/api/archive')) {
+      return Promise.resolve(new Response(JSON.stringify(datasetResponse), { status: 200 }));
+    }
+    if (url.startsWith('/api/casebook/')) {
+      return Promise.resolve(new Response(JSON.stringify(casebook), { status: 200 }));
+    }
+    return Promise.resolve(new Response('{}', { status: 200 }));
+  });
+
+  render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="archive" onSelect={() => undefined} onOpenCasebook={() => undefined} />);
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&sort=risk_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive/analytics?sort=risk_desc'));
+  const analyticsCallsBefore = fetchMock.mock.calls.filter(([input]) => String(input).startsWith('/api/archive/analytics')).length;
+  fireEvent.click(screen.getByLabelText('Next archive page'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=100&sort=risk_desc'));
+  const analyticsCallsAfter = fetchMock.mock.calls.filter(([input]) => String(input).startsWith('/api/archive/analytics')).length;
+  expect(analyticsCallsAfter).toBe(analyticsCallsBefore);
+  fetchMock.mockRestore();
+});
+
