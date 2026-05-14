@@ -45,4 +45,5 @@ export const api = {
     return getJson<ReviewListResponse>(`/api/reviews${query ? `?${query}` : ''}`);
   },
   review: (caseId: string) => getJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`),
+  saveReview: (caseId: string, payload: ReviewUpdateRequest) => putJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`, payload),
 };
