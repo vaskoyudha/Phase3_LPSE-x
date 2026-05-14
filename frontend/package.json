@@ -11,14 +11,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fontsource/space-grotesk": "^5.2.10",
-    "@phosphor-icons/react": "^2.1.10",
+    "@fontsource/space-grotesk": "5.2.10",
+    "@phosphor-icons/react": "2.1.10",
     "@types/d3-geo": "3.1.0",
     "@vitejs/plugin-react": "6.0.1",
     "d3-geo": "3.1.1",
-    "echarts": "^6.0.0",
+    "echarts": "6.0.0",
     "lucide-react": "1.14.0",
-    "maplibre-gl": "^5.24.0",
+    "maplibre-gl": "5.24.0",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "recharts": "3.8.1",

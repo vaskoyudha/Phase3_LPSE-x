@@ -40,7 +40,6 @@ const INFERENCE_PANEL_ID = 'dashboard-inference-panel';
 const SELECTED_CASE_PANEL_ID = 'dashboard-selected-case-panel';
 const RIGHT_RAIL_STICKY_TOP = 104;
 const RIGHT_RAIL_STICKY_BOTTOM = 0;
-const ARCHIVE_PAGE_SIZE = 100;
 const PROFILE_NAME = 'Vasco Yudha';
 const PROFILE_ROLE = 'LPSE-X Risk Analyst';
 export type DashboardTab = 'overview' | 'archive' | 'analytics' | 'locations' | 'activity';
@@ -258,7 +257,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
     let alive = true;
     const params = new URLSearchParams();
     params.set('page', String(datasetPage));
-    params.set('page_size', String(ARCHIVE_PAGE_SIZE));
+    params.set('page_size', '100');
     if (filters.risk && filters.risk !== 'all') params.set('risk', filters.risk);
     if (filters.search.trim()) params.set('search', filters.search.trim());
     if (filters.buyer) params.set('buyer', filters.buyer);
