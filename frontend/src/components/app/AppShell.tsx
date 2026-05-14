@@ -1,8 +1,10 @@
 import { type ReactNode, useState } from 'react';
-import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, SidebarSimple, SlidersHorizontal, SquaresFour, X } from '@phosphor-icons/react';
+import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, SidebarSimple, SlidersHorizontal, SquaresFour, UserCircle, X } from '@phosphor-icons/react';
 import { BrandMark } from '../shared/BrandMark';
+import { operatorInitials } from '../../data/operatorProfile';
+import { useOperatorProfile } from '../../data/useOperatorProfile';
 
-export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'not-found';
+export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'profile' | 'not-found';
 
 export type Navigate = (href: string) => void;
 
@@ -94,7 +96,7 @@ export function AppShell({ active, title, onNavigate, children, dashboardNav, pa
             );
           })}
         </nav>
-        <p className="safe-copy app-sidebar__guardrail">triase risiko · prioritas review · bukan tuduhan pelanggaran</p>
+        <SidebarProfile onNavigate={navigate} active={active} />
       </aside>
       {sidebarOpen && <button className="app-sidebar__scrim" aria-label="Dismiss sidebar" type="button" onClick={() => setSidebarOpen(false)} />}
 
@@ -185,5 +187,34 @@ export function AppShell({ active, title, onNavigate, children, dashboardNav, pa
         </div>
       </div>
     </div>
+  );
+}
+
+function SidebarProfile({ onNavigate, active }: { onNavigate: (href: string) => void; active: AppRouteKey }) {
+  const profile = useOperatorProfile();
+  const initials = operatorInitials(profile);
+  const isActive = active === 'profile';
+  const subtitle = profile.email || profile.role;
+
+  return (
+    <a
+      href="/profile"
+      className="app-sidebar__profile"
+      aria-label={`Open ${profile.name} operator profile`}
+      aria-current={isActive ? 'page' : undefined}
+      onClick={(event) => {
+        event.preventDefault();
+        onNavigate('/profile');
+      }}
+    >
+      <span className="app-sidebar__profile-meta">
+        <small className="app-sidebar__profile-eyebrow">Operator profile</small>
+        <strong title={profile.name}>{profile.name}</strong>
+        <em title={subtitle}>{subtitle}</em>
+      </span>
+      <span className="app-sidebar__profile-avatar" aria-hidden="true">
+        {initials || <UserCircle size={24} weight="fill" />}
+      </span>
+    </a>
   );
 }
