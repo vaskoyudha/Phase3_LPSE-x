@@ -119,6 +119,11 @@ def _format_value(value) -> str:
     return str(value)
 
 
+def _format_signed_shap(value: float) -> str:
+    formatted = f"{float(value):+.3f}".rstrip("0").rstrip(".")
+    return formatted if formatted not in {"+0", "-0"} else "0"
+
+
 def _feature_label(feature: str) -> str:
     return FEATURE_LABELS.get(feature, feature.replace("_", " "))
 
@@ -130,12 +135,27 @@ def _factor_title(feature: str) -> str:
     return _feature_label(feature).capitalize()
 
 
-def _factor_reason(feature: str, direction: str) -> str:
+def _factor_reason(
+    feature: str,
+    direction: str,
+    *,
+    value_display: str = "tidak tersedia",
+    shap_value: float = 0.0,
+) -> str:
     guidance = FEATURE_REVIEW_GUIDANCE.get(feature)
-    if guidance:
-        return guidance[1]
+    base = guidance[1] if guidance else None
     verb = "menaikkan" if direction == "increases_risk" else "menurunkan"
-    return f"Fitur ini {verb} prioritas review menurut kontribusi model."
+    impact = _impact_label(shap_value)
+    shap_display = _format_signed_shap(shap_value)
+    if guidance:
+        return (
+            f"{base} Nilai fitur {value_display} dengan SHAP {shap_display} {verb} skor risiko "
+            f"dari baseline model ({impact}). Sinyal ini perlu dibaca bersama faktor lain dan bukan bukti tunggal."
+        )
+    return (
+        f"Fitur ini bernilai {value_display}; SHAP {shap_display} {verb} skor risiko dari baseline model "
+        f"({impact}). Verifikasi bersama dokumen paket dan faktor lain sebelum menentukan tindak lanjut."
+    )
 
 
 def _factor_review_check(feature: str, direction: str) -> str:
@@ -264,8 +284,8 @@ def render_factor_sentence(factor: dict) -> str:
     else:
         verb = "meningkatkan"
     return (
-        f"{label.capitalize()} bernilai {value} dan {verb} skor risiko "
-        f"dengan {impact}."
+        f"{label.capitalize()} bernilai {value}; SHAP {_format_signed_shap(shap_value)} {verb} "
+        f"skor risiko dari baseline model dengan {impact}."
     )
 
 
@@ -296,16 +316,17 @@ def build_explanation_brief(
         feature = str(factor.get("feature", "fitur"))
         shap_value = float(factor.get("shap_value", 0.0))
         direction = "decreases_risk" if shap_value < 0 or factor.get("direction") == "decreases_risk" else "increases_risk"
+        value_display = _format_value(factor.get("value", factor.get("feature_value")))
         return {
             "feature": feature,
             "title": _factor_title(feature),
             "human_label": factor.get("feature_label") or _feature_label(feature),
-            "value_display": _format_value(factor.get("value", factor.get("feature_value"))),
+            "value_display": value_display,
             "shap_value": round(shap_value, 6),
             "impact_label": _impact_label(shap_value),
             "direction": direction,
             "direction_label": "Menaikkan prioritas review" if direction == "increases_risk" else "Menurunkan prioritas review",
-            "reason": _factor_reason(feature, direction),
+            "reason": _factor_reason(feature, direction, value_display=value_display, shap_value=shap_value),
             "reviewer_check": _factor_review_check(feature, direction),
         }
 

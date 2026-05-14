@@ -1916,14 +1916,23 @@ a:active {
 
 @media (max-width: 1180px) {
   .landing-hero,
+  .landing-score-section,
+  .landing-source-section,
+  .landing-honesty-panel,
+  .landing-credibility-band,
   .landing-preview-grid,
   .landing-bottom-grid,
   .landing-value-grid {
     grid-template-columns: minmax(0, 1fr) !important;
   }
+  .landing-score-section > aside {
+    justify-self: stretch !important;
+    max-width: none !important;
+  }
   .landing-preview,
   .landing-preview .card,
-  .landing-value-grid .card {
+  .landing-value-grid .card,
+  .landing-role-card {
     transform: none !important;
   }
   .landing-capabilities,
@@ -1950,6 +1959,22 @@ a:active {
   .landing-capabilities,
   .landing-risk-grid {
     grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .landing-pipeline {
+    grid-template-columns: minmax(0, 1fr) !important;
+    overflow-x: visible !important;
+    background: none !important;
+  }
+  .landing-pipeline > li {
+    margin-top: 0 !important;
+  }
+  .landing-constraint-head {
+    display: none !important;
+  }
+  .landing-constraint-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    align-items: start !important;
   }
 }
 

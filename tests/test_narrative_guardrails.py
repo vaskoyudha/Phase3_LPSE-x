@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.narrative import render_explanation_narrative
+from src.narrative import build_explanation_brief, render_explanation_narrative
 from src.product_demo import HEURISTIC_LABEL_NOTE_ID, SAFE_GUARDRAIL_ID
 
 
@@ -68,6 +68,31 @@ def test_narrative_translates_model_features_and_avoids_repetitive_technical_cop
     assert "Diturunkan dari triase model" not in narrative
     assert "Model mengklasifikasikan paket ini" not in narrative
     assert "kontribusi SHAP sekitar" not in narrative
+
+
+def test_explanation_brief_expands_driver_reason_without_overclaiming():
+    brief = build_explanation_brief(
+        {
+            "predicted_class": 2,
+            "predicted_label": "Risiko Tinggi",
+            "probability": 0.97,
+            "factors": [
+                {"feature": "f_tender_value_zscore_buyer", "value": 2.5706, "shap_value": 4.2327},
+                {"feature": "f_supplier_recent_90d_award_count", "value": 1, "shap_value": -1.2605},
+            ],
+        }
+    )
+
+    driver_reason = brief["top_drivers"][0]["reason"].lower()
+    reducer_reason = brief["risk_reducers"][0]["reason"].lower()
+
+    assert "nilai fitur 2.5706" in driver_reason
+    assert "shap +4.233" in driver_reason
+    assert "baseline model" in driver_reason
+    assert "menaikkan skor risiko" in driver_reason
+    assert "bukan bukti tunggal" in driver_reason
+    assert "shap -1.26" in reducer_reason
+    assert "menurunkan skor risiko" in reducer_reason
 
 
 def test_owned_docs_and_static_casebook_avoid_prohibited_claims():

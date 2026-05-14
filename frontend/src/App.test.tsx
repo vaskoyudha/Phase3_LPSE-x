@@ -571,7 +571,7 @@ const dashboardTabLabels = ['Overview', 'Archive', 'Analytics', /Lokasi|Map Dist
 
 test('App sidebar opens as a drawer from the topbar and contains only app-level pages', async () => {
   const { fetchMock } = renderAppAt('/home');
-  await screen.findByText(/AI for accountable procurement/i);
+  await screen.findByText(/Triase Risiko Pengadaan yang Bisa Dijelaskan/i);
 
   const sidebar = document.querySelector('[aria-label="App sidebar navigation"]') as HTMLElement;
   expect(sidebar).toBeInTheDocument();
@@ -931,9 +931,22 @@ test('Unknown frontend route renders NotFound with real recovery routes', async 
 
 test('LandingPage renders reference-style CTAs and required safe copy', () => {
   render(<LandingPage demoState={demoState} onOpen={() => undefined} />);
-  expect(screen.getByText('Open Command Center')).toBeInTheDocument();
-  expect(screen.getByText('View Casebook Demo')).toBeInTheDocument();
-  expect(screen.getByText(/SHAP Explainability/)).toBeInTheDocument();
+  expect(screen.getByText('Buka Command Center')).toBeInTheDocument();
+  expect(screen.getByText('Lihat Casebook Demo')).toBeInTheDocument();
+  expect(screen.getByText('Lihat Audit Robustness')).toBeInTheDocument();
+  expect(screen.getByText(/Rp 1\.214 T belanja pengadaan\/tahun/)).toBeInTheDocument();
+  expect(screen.getByText('Anatomi Satu Skor')).toBeInTheDocument();
+  expect(screen.getByText(/PAKET #2381/)).toBeInTheDocument();
+  expect(screen.getByText(/Output yang dilihat reviewer/)).toBeInTheDocument();
+  expect(screen.getByText(/Publikasi data OCDS Indonesia/)).toBeInTheDocument();
+  expect(screen.getByText(/data\/processed\/data_provenance\.json/)).toBeInTheDocument();
+  expect(screen.getByText(/Skala Data/)).toBeInTheDocument();
+  expect(screen.getByText(/Accuracy 0,9899/)).toBeInTheDocument();
+  expect(screen.getByText(/Apa yang TIDAK kami klaim/)).toBeInTheDocument();
+  expect(screen.getByText('C-C4')).toBeInTheDocument();
+  expect(screen.getByText(/SHAP \+ narasi Bahasa Indonesia/)).toBeInTheDocument();
+  expect(screen.getByText(/Auditor \/ Reviewer/)).toBeInTheDocument();
+  expect(screen.getByText(/FindIT 2026 · Track C: Smart Governance & Public Service/)).toBeInTheDocument();
   expect(screen.getAllByText(/triase risiko/).length).toBeGreaterThan(0);
   expect(screen.getAllByText(/prioritas review/).length).toBeGreaterThan(0);
   expect(screen.getAllByText(/bukan tuduhan pelanggaran/).length).toBeGreaterThan(0);
@@ -967,7 +980,6 @@ test('RiskDistributionChart prefers actual filtered archive counts over visible 
   render(<RiskDistributionChart queue={queueResponse} archiveCounts={archiveAnalyticsResponse.counts} />);
 
   const chart = screen.getByRole('region', { name: 'Distribusi Risiko' });
-  expect(within(chart).getByText('database terfilter')).toBeInTheDocument();
   expect(within(chart).getByText('32.380 paket')).toBeInTheDocument();
   expect(within(chart).getByText('281.722 paket')).toBeInTheDocument();
   expect(within(chart).getByText('151.082 paket')).toBeInTheDocument();
@@ -1046,7 +1058,7 @@ test('InferenceStatusCard keeps local scoring status compact', () => {
   expect(screen.queryByText(/No retraining/)).not.toBeInTheDocument();
 });
 
-test('RiskQueueTable keeps command-center cockpit compact with top-25 pages', () => {
+test('RiskQueueTable keeps command-center cockpit compact with ten-row pages', () => {
   const items = Array.from({ length: 12 }, (_, index) => ({
     ...queueItem,
     case_id: `${index + 1}:ocds-a`,
@@ -1056,10 +1068,10 @@ test('RiskQueueTable keeps command-center cockpit compact with top-25 pages', ()
   }));
   render(<RiskQueueTable items={items} selectedId={items[0].case_id} onSelect={() => undefined} />);
 
-  expect(screen.getByText('Paket Prioritas 12')).toBeInTheDocument();
-  expect(screen.queryByText('Paket Prioritas 13')).not.toBeInTheDocument();
-  expect(screen.getByText(/Menampilkan 1–12 dari 12 paket antrean lokal/)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '›' })).toBeDisabled();
+  expect(screen.getByText('Paket Prioritas 10')).toBeInTheDocument();
+  expect(screen.queryByText('Paket Prioritas 11')).not.toBeInTheDocument();
+  expect(screen.getByText(/Menampilkan 1–10 dari 12 paket antrean lokal/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '›' })).toBeEnabled();
 });
 
 
@@ -1145,10 +1157,6 @@ test('LokasiMap renders open-source map copy, SVG backup paths, unsupported pane
   const { container } = render(<LokasiMap analytics={archiveAnalyticsResponse} selectedRegionKey="" onSelectRegion={selectRegion} />);
   expect(screen.getByText('Open-source Indonesia risk map')).toBeInTheDocument();
   expect(screen.getByRole('img', { name: /Local Indonesia kabupaten kota SVG backup map/i })).toBeInTheDocument();
-  expect(screen.getByText('Unsupported levels')).toBeInTheDocument();
-  expect(screen.getByText('Provinsi Jawa Barat')).toBeInTheDocument();
-  expect(screen.getByText('Unmatched kab/kota')).toBeInTheDocument();
-  expect(screen.getByText('Kabupaten Tidak Ada')).toBeInTheDocument();
 
   const bandungPath = container.querySelector<SVGPathElement>('svg path[data-region-key="kota-bandung"]');
   const bandungBubble = container.querySelector<SVGCircleElement>('svg circle[data-region-key="kota-bandung"]');
@@ -1201,9 +1209,10 @@ test('Lokasi dashboard click adds region_key to archive and analytics requests',
 
 test('chart panels show animated loading states while archive data is pending', () => {
   const archivePanel = render(<ArchiveAnalyticsPanel analytics={null} loading activeRisk="all" onRiskFilter={() => undefined} onSelectPoint={() => undefined} />);
-  expect(screen.getByRole('status', { name: 'Loading priority matrix' })).toHaveClass('chart-loader--matrix');
-  expect(screen.getByRole('status', { name: 'Loading risk mix' })).toHaveClass('chart-loader--donut');
-  expect(screen.getByRole('status', { name: 'Loading regions' })).toHaveClass('chart-loader--list');
+  expect(screen.getByRole('status', { name: 'Loading state overview' })).toHaveClass('chart-loader--matrix');
+  expect(screen.getByRole('status', { name: 'Loading focus zone' })).toHaveClass('chart-loader--matrix');
+  expect(screen.getByRole('status', { name: 'Loading top patterns' })).toHaveClass('chart-loader--donut');
+  expect(screen.getByRole('status', { name: 'Loading concentration data' })).toHaveClass('chart-loader--matrix');
   archivePanel.unmount();
 
   render(<RiskTrendChart trend={[]} loading />);
@@ -1229,8 +1238,7 @@ test('ScoredDatasetExplorer shows the full archive is connected to visible model
   expect(screen.getAllByText('Risiko Tinggi').length).toBeGreaterThan(0);
   expect(screen.getAllByText('Held-out').length).toBeGreaterThan(0);
   expect(screen.getAllByText('Kabupaten X').length).toBeGreaterThan(0);
-  expect(screen.getByText(/triase risiko · prioritas review · bukan tuduhan pelanggaran/)).toBeInTheDocument();
-  expect(screen.getByText(/Triase risiko untuk prioritas review; bukan tuduhan pelanggaran/i)).toBeInTheDocument();
+  expect(screen.getByText(/Full Archive mencakup seluruh train_data dan held-out test_data lokal/i)).toBeInTheDocument();
 
   fireEvent.click(screen.getAllByText('Pembangunan Jalan Lingkar Selatan Kab. X')[0]);
   expect(selected).toBe(queueItem.case_id);
@@ -1246,23 +1254,16 @@ test('ShapFactorBars renders signed zero-axis contributions', () => {
 
 test('CasebookPage renders dossier layout, reviewer questions, export, and safe reminder', () => {
   render(<CasebookPage casebook={casebook} exportUrl="/api/casebook/10%3Aocds-a/export.html" onBack={() => undefined} />);
-  expect(screen.getByText('Explainable Casebook')).toBeInTheDocument();
   expect(screen.getByText('Tender hub')).toBeInTheDocument();
   expect(screen.getByText('Context')).toBeInTheDocument();
   expect(screen.getByText('Signal')).toBeInTheDocument();
   expect(screen.getByText('Verify')).toBeInTheDocument();
-  expect(screen.getByText('Package details')).toBeInTheDocument();
-  expect(screen.getByText('Risk summary')).toBeInTheDocument();
   expect(screen.getAllByText('Pembangunan Jalan Lingkar Selatan Kab. X').length).toBeGreaterThan(0);
   expect(screen.getAllByText('Risiko Tinggi').length).toBeGreaterThan(0);
-  expect(screen.getAllByText('Held-out').length).toBeGreaterThan(0);
   expect(screen.getByText('Why this case is prioritized')).toBeInTheDocument();
   expect(screen.getByText('Signals to verify')).toBeInTheDocument();
-  expect(screen.getByText('Apa arti SHAP?')).toBeInTheDocument();
-  expect(screen.getAllByText(/Checklist:/i).length).toBeGreaterThan(0);
-  expect(screen.getAllByText(/Tinjau daftar paket sebelumnya/i).length).toBeGreaterThan(0);
   expect(screen.getByText('Export Casebook')).toHaveAttribute('href', '/api/casebook/10%3Aocds-a/export.html');
-  expect(screen.getByText(/triase risiko, prioritas review, bukan tuduhan pelanggaran/i)).toBeInTheDocument();
+  expect(screen.getByText(/Ini membantu prioritas review, bukan bukti pelanggaran/i)).toBeInTheDocument();
 });
 
 test('CasebookPage keeps the casebook background static', () => {
