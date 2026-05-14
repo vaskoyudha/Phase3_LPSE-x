@@ -32,4 +32,8 @@ export const api = {
     const query = params.toString();
     return getJson<DatasetBrowserResponse>(`/api/dataset${query ? `?${query}` : ''}`);
   },
+  archive: (params: URLSearchParams = new URLSearchParams()) => {
+    const query = params.toString();
+    return getJson<ArchiveBrowserResponse>(`/api/archive${query ? `?${query}` : ''}`);
+  },
 };
