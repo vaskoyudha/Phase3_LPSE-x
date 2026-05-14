@@ -366,7 +366,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
         <section className="command-center" style={styles.center}>
           <DashboardSectionIntro tab={activeTabDefinition} />
           {activeTab === 'analytics' && <AnalyticsContextStrip analytics={archiveAnalytics} activeRisk={filters.risk} selectedRegionKey={selectedRegionKey} />}
-          
+
           {activeTab === 'overview' && <div className="overview-map-row" style={styles.overviewMapRow}>
             <NusantaraAtlasCarousel analytics={archiveAnalytics} onNavigate={onNavigate} />
             <RegionRiskSummary analytics={archiveAnalytics} onSelectRegion={selectRegion} />
@@ -635,7 +635,7 @@ function AnalyticsRailCards({ analytics, activeRisk, selectedRegionKey }: { anal
 function AnalyticsContextStrip({ analytics, activeRisk, selectedRegionKey }: { analytics: ArchiveAnalyticsResponse | null; activeRisk: string; selectedRegionKey: string }) {
   const highRiskCount = riskDistributionCount(analytics?.counts.risk_distribution, ['Risiko_Tinggi', 'Risiko Tinggi', 'risiko_tinggi']);
   const formatNum = (n?: number) => n == null ? '—' : n.toLocaleString('id-ID');
-  
+
   return (
     <section
       data-testid="analytics-context-strip"
