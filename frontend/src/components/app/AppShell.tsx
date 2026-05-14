@@ -3,6 +3,10 @@ import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, Sid
 import { BrandMark } from '../shared/BrandMark';
 import { operatorInitials } from '../../data/operatorProfile';
 import { useOperatorProfile } from '../../data/useOperatorProfile';
+import aiConnectLogo from '../../assets/brand/AiConnect.png';
+import dtetiLogo from '../../assets/brand/DTETI.png';
+import findItLogo from '../../assets/brand/FINDIT.png';
+import ugmLogo from '../../assets/brand/ugm.png';
 
 export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'profile' | 'not-found';
 
@@ -96,6 +100,7 @@ export function AppShell({ active, title, onNavigate, children, dashboardNav, pa
             );
           })}
         </nav>
+        <SidebarSponsors />
         <SidebarProfile onNavigate={navigate} active={active} />
       </aside>
       {sidebarOpen && <button className="app-sidebar__scrim" aria-label="Dismiss sidebar" type="button" onClick={() => setSidebarOpen(false)} />}
@@ -216,5 +221,32 @@ function SidebarProfile({ onNavigate, active }: { onNavigate: (href: string) => 
         {initials || <UserCircle size={24} weight="fill" />}
       </span>
     </a>
+  );
+}
+
+const sponsors = [
+  { src: aiConnectLogo, alt: 'Ai Connect' },
+  { src: findItLogo,   alt: 'FIND IT'    },
+  { src: dtetiLogo,    alt: 'DTETI'      },
+  { src: ugmLogo,      alt: 'Universitas Gadjah Mada' },
+];
+
+function SidebarSponsors() {
+  return (
+    <div className="app-sidebar__sponsors" aria-label="Penyelenggara hackathon">
+      <small className="app-sidebar__sponsors-label">Penyelenggara</small>
+      <div className="app-sidebar__sponsors-grid">
+        {sponsors.map((s) => (
+          <div key={s.alt} className="app-sidebar__sponsor-cell">
+            <img
+              src={s.src}
+              alt={s.alt}
+              className="app-sidebar__sponsor-img"
+              draggable={false}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

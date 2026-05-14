@@ -2128,3 +2128,42 @@ body:has(.landing-shell)::after {
     max-width: 540px !important;
   }
 }
+
+/* Sidebar sponsor logos */
+.app-sidebar__sponsors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.app-sidebar__sponsors-label {
+  display: block;
+  color: var(--lp-muted);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.app-sidebar__sponsors-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.app-sidebar__sponsor-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 4px;
+  min-height: 36px;
+}
+.app-sidebar__sponsor-img {
+  display: block;
+  width: 100%;
+  max-width: 40px;
+  max-height: 28px;
+  object-fit: contain;
+  filter: brightness(0.9) saturate(0.85);
+  transition: filter 200ms ease;
+}
+.app-sidebar__sponsor-cell:hover .app-sidebar__sponsor-img {
+  filter: brightness(1.1) saturate(1);
+}
