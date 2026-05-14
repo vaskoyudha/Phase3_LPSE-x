@@ -236,3 +236,27 @@ export interface ArchivePriorityMapMeta {
   null_value_rows: number;
   zero_value_rows: number;
 }
+
+export interface ArchiveConcentrationItem {
+  label: string;
+  count: number;
+  percent: number;
+  high_risk_count: number;
+  high_risk_percent: number;
+  total_contract_value: number;
+  average_risk_score: number;
+  region: string | null;
+  region_type: string | null;
+  region_source: string | null;
+  region_note: string | null;
+  buyer: string | null;
+}
+
+export interface ArchiveConcentrationMeta {
+  limit: number;
+  returned: number;
+  matched_count: number;
+  is_capped: boolean;
+  sort: string;
+  note: string;
+}
