@@ -1,9 +1,26 @@
-# LPSE-X product backend runtime dependencies. The ML repo (../lpseN)
-# already pins xgboost, onnxruntime, pandas, etc.; we only add the
-# product-side stack here. Version pins are conservative.
-fastapi>=0.115,<1.0
-uvicorn[standard]>=0.30,<1.0
-pydantic>=2.7,<3.0
-httpx>=0.27,<1.0
-pytest>=8.0,<9.0
-pytest-timeout>=2.3,<3.0
+xgboost==2.1.4
+shap==0.45.0
+dice-ml==0.12
+onnxruntime==1.17.0
+scikit-learn==1.4.0
+pandas==2.2.0
+pyarrow==15.0.0
+numpy==1.26.0
+matplotlib==3.8.0
+seaborn==0.13.0
+optuna==3.6.0
+onnxmltools==1.16.0
+flattentool==0.20.0
+jupyter==1.0.0
+nbconvert==7.16.4
+pytest==8.3.5
+pytest-timeout==2.3.1
+
+# Local/offline final demo UI
+streamlit==1.40.2
+
+fastapi==0.115.6
+
+uvicorn[standard]==0.32.1
+
+httpx==0.27.2

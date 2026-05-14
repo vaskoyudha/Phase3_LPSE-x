@@ -29,6 +29,9 @@ frontend/coverage/
 /package-lock.json
 /package.json
 
+# Generated demo/static artifacts
+demo_casebook.html
+
 # OS/editor
 .DS_Store
 .idea/
