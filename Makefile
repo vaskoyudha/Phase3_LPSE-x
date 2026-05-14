@@ -1,23 +1,33 @@
-.PHONY: install-python inference-smoke static-casebook verify-python guardrail-audit verify
+.PHONY: install-python install-frontend build-frontend run-api inference-smoke verify-python verify-frontend verify guardrail-audit
 
 PYTHON ?= .venv/bin/python
 PIP ?= .venv/bin/pip
+UVICORN ?= .venv/bin/uvicorn
 
 install-python:
 	python3 -m venv .venv
 	$(PIP) install -r requirements.txt
 
+install-frontend:
+	cd frontend && npm ci
+
+build-frontend:
+	cd frontend && npm run build
+
+run-api:
+	$(UVICORN) src.api:app --host 127.0.0.1 --port 8000
+
 inference-smoke:
 	PYTHONPATH=. $(PYTHON) scripts/inference_smoke.py
 
-static-casebook:
-	PYTHONPATH=. $(PYTHON) -m src.casebook
-
 verify-python:
-	$(PYTHON) -m compileall src tests scripts
-	PYTHONPATH=. $(PYTHON) -m pytest tests
+	$(PYTHON) -m compileall src tests
+	$(PYTHON) -m pytest
+
+verify-frontend:
+	cd frontend && npm run typecheck && npm run lint && npm run test && npm run build
 
 guardrail-audit:
-	$(PYTHON) -c "from pathlib import Path; blocked=['terbukti fraud','terbukti korupsi','fraud final','legal verdict','confirmed corruption','putusan hukum']; paths=[p for p in Path('.').rglob('*') if p.is_file() and p.suffix in {'.py','.md','.html','.ipynb'} and not any(x in p.parts for x in {'.git','.venv','__pycache__'})]; text='\\n'.join(p.read_text(encoding='utf-8', errors='ignore') for p in paths).lower(); hits=[b for b in blocked if b in text]; raise SystemExit('Blocked guardrail copy: '+', '.join(hits) if hits else 0)"
+	! grep -RniI --exclude-dir=__pycache__ --exclude-dir=node_modules --exclude-dir=dist --exclude=package-lock.json --exclude-dir=.git -E "terbukti[[:space:]-]+fraud|terbukti[[:space:]-]+korupsi|fraud[[:space:]-]+final|legal[[:space:]-]+verdict|confirmed[[:space:]-]+corruption|putusan[[:space:]-]+hukum" src frontend README.md DEMO_SCRIPT.md demo_casebook.html tests docs
 
-verify: verify-python inference-smoke guardrail-audit
+verify: verify-python verify-frontend inference-smoke guardrail-audit

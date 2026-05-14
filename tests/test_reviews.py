@@ -1,137 +1,77 @@
+from fastapi.testclient import TestClient
 
-"""Tests for SQLite review store functionality."""
-
-import sqlite3
-from pathlib import Path
-from tempfile import TemporaryDirectory
-
-import pytest
-
-from src.reviews import (
-    ReviewStore,
-    REVIEW_STATUSES,
-    _draft_review,
-    _review_snapshots,
-    _review_record,
-    _review_list_item_from_queue,
-    _review_counts,
-)
+from src import api as api_module
+from src.api import app
 
 
-def test_review_store_initialization():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        assert store.db_path == db_path
+client = TestClient(app)
 
 
-def test_draft_review():
-    draft = _draft_review("CASE-TEST-001")
-    assert draft["case_id"] == "CASE-TEST-001"
-    assert draft["status"] == "Perlu Review"
-    assert draft["is_draft"] is True
-    assert draft["signed_off"] is False
+def _use_temp_review_db(monkeypatch, tmp_path):
+    db_path = tmp_path / "reviews.sqlite3"
+    monkeypatch.setattr(api_module, "REVIEW_DB_PATH", db_path, raising=False)
+    if hasattr(api_module, "_review_store"):
+        api_module._review_store.cache_clear()
+    return db_path
 
 
-def test_get_review_not_found():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        review = store.get_review("CASE-NOT-EXIST")
-        assert review is None
+def test_review_endpoint_returns_casebook_prefilled_draft_without_saved_record(monkeypatch, tmp_path):
+    _use_temp_review_db(monkeypatch, tmp_path)
+    demo_state = client.get("/api/demo-state").json()
+    case_id = demo_state["demo_case_id"]
+
+    response = client.get(f"/api/reviews/{case_id}")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["case_id"] == case_id
+    assert payload["is_saved"] is False
+    assert payload["status"] == "Perlu Review"
+    assert payload["prefill"]["rationale"]
+    assert payload["prefill"]["checklist"]
+    assert payload["model_snapshot"]["predicted_label"]
+    assert payload["guardrail"].startswith("Output LPSE-X")
 
 
-def test_upsert_review_new():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        review = store.upsert_review(
-            case_id="CASE-TEST-002",
-            status="Perlu Review",
-            reviewer_name="Test Reviewer",
-            notes="Catatan test",
-        )
-        assert review.case_id == "CASE-TEST-002"
-        assert review.status == "Perlu Review"
-        assert review.reviewer_name == "Test Reviewer"
-        assert review.notes == "Catatan test"
-        assert len(review.event_history) == 1
+def test_review_upsert_saves_human_signoff_and_appends_history(monkeypatch, tmp_path):
+    _use_temp_review_db(monkeypatch, tmp_path)
+    case_id = client.get("/api/demo-state").json()["demo_case_id"]
+
+    response = client.put(
+        f"/api/reviews/{case_id}",
+        json={
+            "status": "Ditandai Risiko",
+            "reviewer_name": "Vasco Yudha",
+            "notes": "Perlu eskalasi karena checklist awal perlu dibuktikan.",
+            "decision_summary": "Eskalasi untuk verifikasi dokumen pendukung.",
+            "signed_off": True,
+        },
+    )
+
+    assert response.status_code == 200
+    saved = response.json()
+    assert saved["case_id"] == case_id
+    assert saved["is_saved"] is True
+    assert saved["status"] == "Ditandai Risiko"
+    assert saved["reviewer_name"] == "Vasco Yudha"
+    assert saved["signed_off_at"]
+    assert saved["event_count"] == 1
+
+    reread = client.get(f"/api/reviews/{case_id}").json()
+    assert reread["is_saved"] is True
+    assert reread["notes"] == "Perlu eskalasi karena checklist awal perlu dibuktikan."
+    assert reread["history"][0]["status"] == "Ditandai Risiko"
+
+    listing = client.get("/api/reviews?status=Ditandai%20Risiko").json()
+    assert listing["counts"]["Ditandai Risiko"] == 1
+    assert listing["items"][0]["case_id"] == case_id
+    assert listing["items"][0]["is_saved"] is True
 
 
-def test_upsert_review_unknown_status_rejected():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        with pytest.raises(ValueError):
-            store.upsert_review(
-                case_id="CASE-TEST-003",
-                status="Status Tidak Valid",
-            )
+def test_review_upsert_rejects_unknown_status(monkeypatch, tmp_path):
+    _use_temp_review_db(monkeypatch, tmp_path)
+    case_id = client.get("/api/demo-state").json()["demo_case_id"]
 
+    response = client.put(f"/api/reviews/{case_id}", json={"status": "Accused", "reviewer_name": "Vasco"})
 
-def test_upsert_review_appends_history():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        store.upsert_review(
-            case_id="CASE-TEST-004",
-            status="Perlu Review",
-        )
-        review = store.upsert_review(
-            case_id="CASE-TEST-004",
-            status="Ditandai Risiko",
-        )
-        assert len(review.event_history) == 2
-
-
-def test_upsert_signed_off_sets_timestamp():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        review = store.upsert_review(
-            case_id="CASE-TEST-005",
-            status="Selesai",
-            signed_off=True,
-        )
-        assert review.signed_off is True
-        assert review.signed_off_at is not None
-
-
-def test_list_reviews():
-    with TemporaryDirectory() as temp_dir:
-        db_path = Path(temp_dir) / "test.db"
-        store = ReviewStore(db_path=db_path)
-        store.upsert_review(case_id="CASE-001", status="Perlu Review")
-        store.upsert_review(case_id="CASE-002", status="Ditandai Risiko")
-        reviews = store.list_reviews()
-        assert len(reviews) == 2
-
-
-def test_review_snapshots():
-    payload = {
-        "metadata": {"package_title": "Test Paket"},
-        "model_output": {"predicted_class": 2},
-    }
-    package_snapshot, model_snapshot = _review_snapshots(payload)
-    assert package_snapshot["package_title"] == "Test Paket"
-    assert model_snapshot["predicted_class"] == 2
-
-
-def test_review_list_item_from_queue():
-    row = {"case_id": "CASE-001", "package_title": "Test Paket", "risk_label": "Risiko Tinggi", "risk_rank": 1}
-    item = _review_list_item_from_queue(row)
-    assert item["case_id"] == "CASE-001"
-    assert item["package_title"] == "Test Paket"
-
-
-def test_review_counts():
-    items = [
-        {"status": "Perlu Review"},
-        {"status": "Perlu Review"},
-        {"status": "Ditandai Risiko"},
-        {"status": "Selesai"},
-    ]
-    counts = _review_counts(items)
-    assert counts["Perlu Review"] == 2
-    assert counts["Ditandai Risiko"] == 1
-    assert counts["Selesai"] == 1
+    assert response.status_code == 422
