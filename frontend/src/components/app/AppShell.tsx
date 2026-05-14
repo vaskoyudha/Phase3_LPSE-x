@@ -2,7 +2,7 @@ import { type ReactNode, useState } from 'react';
 import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, SidebarSimple, SlidersHorizontal, SquaresFour, X } from '@phosphor-icons/react';
 import { BrandMark } from '../shared/BrandMark';
 
-export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'not-found';
+export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'not-found';
 
 export type Navigate = (href: string) => void;
 

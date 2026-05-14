@@ -11,8 +11,13 @@ type LandingPageProps = {
   onNavigate?: (href: string) => void;
 };
 
-export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPageProps) {
+export function LandingPage({ demoState, onOpen, onOpenCasebook, onNavigate }: LandingPageProps) {
   const casebookAction = onOpenCasebook ?? onOpen;
+  const goTo = (href: string) => (event: React.MouseEvent) => {
+    if (!onNavigate) return;
+    event.preventDefault();
+    onNavigate(href);
+  };
 
   return (
     <main className="landing-shell" style={styles.shell}>
@@ -42,6 +47,14 @@ export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPagePr
               </span>
             </button>
           </div>
+          {onNavigate && (
+            <p style={styles.authRow}>
+              <span style={styles.authRowLabel}>Already an auditor?</span>
+              <a href="/login" onClick={goTo('/login')} style={styles.authRowLink}>Sign in</a>
+              <span style={styles.authRowDivider} aria-hidden="true">·</span>
+              <a href="/register" onClick={goTo('/register')} style={styles.authRowLink}>Create account</a>
+            </p>
+          )}
         </div>
       </section>
 
@@ -244,6 +257,36 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: 'center',
     gap: 14,
     flexWrap: 'wrap',
+  },
+  authRow: {
+    margin: '20px 0 0',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    padding: '10px 16px',
+    borderRadius: 999,
+    border: '1px solid var(--lp-line)',
+    background: 'rgba(17, 16, 15, .42)',
+    color: 'var(--lp-muted)',
+    fontSize: 13,
+    fontWeight: 600,
+  },
+  authRowLabel: {
+    color: 'var(--lp-muted)',
+  },
+  authRowLink: {
+    color: 'var(--lp-cream)',
+    textDecoration: 'none',
+    fontWeight: 800,
+    letterSpacing: '-.01em',
+    padding: '4px 8px',
+    borderRadius: 999,
+    transition: 'background .15s ease',
+  },
+  authRowDivider: {
+    color: 'rgba(215, 209, 176, .35)',
   },
   primaryBtn: {
     display: 'flex',

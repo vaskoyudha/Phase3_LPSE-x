@@ -9,6 +9,8 @@ import { ModelTransparencyPage } from './pages/ModelTransparencyPage';
 import { ReviewDeskPage } from './pages/ReviewDeskPage';
 import { AppShell, type AppRouteKey } from './components/app/AppShell';
 import { UtilityPage } from './pages/UtilityPages';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 
 const fallbackDemo: DemoState = {
   ready: false,
@@ -26,7 +28,7 @@ const fallbackDemo: DemoState = {
   production_build_status: { dist_present: false, served_by_fastapi: true, index_html: 'frontend/dist/index.html' },
 };
 
-type Page = 'landing' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'not-found';
+type Page = 'landing' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'not-found';
 
 type RouteState = { page: Page; caseId?: string; dashboardTab?: DashboardTab; selectedId?: string; reviewOpen?: boolean };
 
@@ -41,6 +43,8 @@ function routeFromLocation(location: Location): RouteState {
   const casebookMatch = path.match(/^\/casebook\/(.+)$/);
   if (casebookMatch?.[1]) return { page: 'casebook', caseId: decodeURIComponent(casebookMatch[1]), reviewOpen: query.get('review') === '1' };
   if (path === '/model-transparency') return { page: 'transparency' };
+  if (path === '/login' || path === '/sign-in') return { page: 'login' };
+  if (path === '/register' || path === '/sign-up') return { page: 'register' };
   if (path === '/reviews' || path === '/review-desk') return { page: 'reviews' };
   if (location.search.includes('demo=1') || path === '/command-center' || path === '/dashboard') return { page: 'dashboard', dashboardTab: 'overview', selectedId };
   const dashboardMatch = path.match(/^\/dashboard\/(overview|archive|analytics|locations|activity)$/);
@@ -60,6 +64,8 @@ function routeTitle(route: RouteState) {
   if (route.page === 'help') return 'Help';
   if (route.page === 'casebook') return 'Explainable Casebook';
   if (route.page === 'transparency') return 'Model Transparency';
+  if (route.page === 'login') return 'Auditor Sign-in';
+  if (route.page === 'register') return 'Auditor Registration';
   if (route.page === 'not-found') return 'Halaman tidak ditemukan';
   return 'LPSE-X Home';
 }
@@ -205,6 +211,8 @@ export function App() {
   }
 
   if (route.page === 'transparency') return shell(<ModelTransparencyPage />);
+  if (route.page === 'login') return <LoginPage onNavigate={navigate} />;
+  if (route.page === 'register') return <RegisterPage onNavigate={navigate} />;
   if (route.page === 'reviews') return shell(<ReviewDeskPage onNavigate={navigate} />);
   if (route.page === 'dashboard') {
     if (queueError) return <ErrorCard message={queueError} onRetry={() => void loadQueue()} />;
