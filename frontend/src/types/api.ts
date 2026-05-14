@@ -404,3 +404,14 @@ export interface CasebookExplanationDriver {
   reason: string;
   reviewer_check: string;
 }
+
+export interface CasebookExplanationBrief {
+  summary: string;
+  confidence_label: string;
+  model_interpretation: string;
+  top_drivers: CasebookExplanationDriver[];
+  risk_reducers: CasebookExplanationDriver[];
+  reviewer_checklist: string[];
+  shap_note: string;
+  safety_note: string;
+}
