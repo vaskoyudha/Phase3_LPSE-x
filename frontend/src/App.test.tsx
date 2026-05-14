@@ -829,3 +829,46 @@ test('CommandCenterPage requests the full archive with page_size=100 and no stal
   expect(screen.queryByText(/test_data split/i)).not.toBeInTheDocument();
 });
 
+test('SelectedCasePreview renders selected score and top three casebook factors', () => {
+  const openLocation = vi.fn();
+  const { rerender } = render(<SelectedCasePreview item={queueItem} casebook={casebook} onOpen={() => undefined} onOpenLocation={openLocation} />);
+  expect(screen.queryByText('Selected case')).not.toBeInTheDocument();
+  expect(screen.queryByText('ID Paket')).not.toBeInTheDocument();
+  expect(screen.queryByText('Split')).not.toBeInTheDocument();
+  expect(screen.getAllByText('Buyer-supplier repeat relationship').length).toBeGreaterThan(0);
+  expect(screen.getByText('Description completeness')).toBeInTheDocument();
+  expect(screen.getByText('Kabupaten X')).toBeInTheDocument();
+  expect(screen.getByText(/bukan pin alamat jalan/i)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Open OSM search/i })).toHaveAttribute('href', expect.stringContaining('openstreetmap.org/search'));
+
+  fireEvent.click(screen.getByRole('button', { name: /Show on map/i }));
+  expect(openLocation).toHaveBeenCalledWith('kabupaten-x');
+
+  rerender(<SelectedCasePreview item={{ ...queueItem, buyer_region: 'Kota Bandung', buyer_region_type: 'kota', buyer_region_key: 'kota-bandung' }} casebook={casebook} onOpen={() => undefined} onOpenLocation={openLocation} />);
+  expect(screen.getByTitle(/Approximate street map preview for Kota Bandung/i)).toHaveAttribute('src', expect.stringContaining('openstreetmap.org/export/embed.html'));
+  expect(screen.getByTitle(/Approximate street map preview for Kota Bandung/i)).toHaveAttribute('src', expect.stringContaining('marker='));
+  expect(screen.getByRole('link', { name: /-6\./i })).toHaveAttribute('href', expect.stringContaining('openstreetmap.org/?mlat='));
+});
+
+
+test('SelectedCasePreview opens Casebook for held-out rows and Archive Details for train archive rows', () => {
+  const open = vi.fn();
+  const { rerender } = render(<SelectedCasePreview item={{ ...queueItem, source_split: 'test_data', is_heldout: true }} casebook={casebook} onOpen={open} />);
+  expect(screen.getByRole('button', { name: /Open Casebook/i })).toBeEnabled();
+
+  rerender(<SelectedCasePreview item={{ ...queueItem, case_id: 'train_data:10:ocds-a', source_split: 'train_data', is_heldout: false, archive_rank: 7 } as QueueItem} casebook={null} onOpen={open} />);
+  expect(screen.getByRole('button', { name: /Archive Details/i })).toBeEnabled();
+});
+
+test('InferenceStatusCard keeps local scoring status compact', () => {
+  render(<InferenceStatusCard status={demoState.inference_status} />);
+  expect(screen.getByText('Inference')).toBeInTheDocument();
+  expect(screen.queryByText('Live scoring')).not.toBeInTheDocument();
+  expect(screen.getByText('Ready')).toBeInTheDocument();
+  expect(screen.getByText('93.034')).toBeInTheDocument();
+  expect(screen.getByText('Top 50')).toBeInTheDocument();
+  expect(screen.queryByText(/Why only Top 50/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/No cloud call/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/No retraining/)).not.toBeInTheDocument();
+});
+
