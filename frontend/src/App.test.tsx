@@ -1001,3 +1001,40 @@ test('Lokasi dashboard click adds region_key to archive and analytics requests',
   })).toBe(true);
 }, 15000);
 
+test('chart panels show animated loading states while archive data is pending', () => {
+  const archivePanel = render(<ArchiveAnalyticsPanel analytics={null} loading activeRisk="all" onRiskFilter={() => undefined} onSelectPoint={() => undefined} />);
+  expect(screen.getByRole('status', { name: 'Loading priority matrix' })).toHaveClass('chart-loader--matrix');
+  expect(screen.getByRole('status', { name: 'Loading risk mix' })).toHaveClass('chart-loader--donut');
+  expect(screen.getByRole('status', { name: 'Loading regions' })).toHaveClass('chart-loader--list');
+  archivePanel.unmount();
+
+  render(<RiskTrendChart trend={[]} loading />);
+  expect(screen.getByRole('status', { name: 'Loading monthly trend' })).toHaveClass('chart-loader--bars');
+});
+
+test('RiskTrendChart renders archive trend data without crashing the dashboard', async () => {
+  render(<RiskTrendChart trend={[{ month: '2024-10', tinggi: 3, sedang: 2, rendah: 1, total: 6, average_priority: 0.76 }]} />);
+  expect(screen.getByText('Tren Risiko Arsip per Bulan')).toBeInTheDocument();
+  expect(screen.getByText('Peak 6 paket')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByLabelText('Fallback tren risiko arsip per bulan')).toBeInTheDocument());
+});
+
+test('ScoredDatasetExplorer shows the full archive is connected to visible model risk output', () => {
+  let selected = '';
+  render(<ScoredDatasetExplorer dataset={datasetResponse} selectedId="" onSelect={(row) => { selected = row.case_id; }} onPageChange={() => undefined} />);
+  expect(screen.getByText('Tender Archive Explorer')).toBeInTheDocument();
+  expect(screen.getAllByText('465.184').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('93.034').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('372.150').length).toBeGreaterThan(0);
+  expect(screen.getByText('model_risk.ubj')).toBeInTheDocument();
+  expect(screen.getAllByText('Pembangunan Jalan Lingkar Selatan Kab. X').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Risiko Tinggi').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Held-out').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Kabupaten X').length).toBeGreaterThan(0);
+  expect(screen.getByText(/triase risiko · prioritas review · bukan tuduhan pelanggaran/)).toBeInTheDocument();
+  expect(screen.getByText(/Triase risiko untuk prioritas review; bukan tuduhan pelanggaran/i)).toBeInTheDocument();
+
+  fireEvent.click(screen.getAllByText('Pembangunan Jalan Lingkar Selatan Kab. X')[0]);
+  expect(selected).toBe(queueItem.case_id);
+});
+
