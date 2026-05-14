@@ -31,14 +31,14 @@ export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPagePr
               <ShieldCheck size={20} />
               <span>
                 <strong style={{ display: 'block' }}>Open Command Center</strong>
-                <small style={styles.btnHint}>Launch live dashboard</small>
+                <small style={styles.primaryBtnHint}>Launch live dashboard</small>
               </span>
             </button>
             <button onClick={casebookAction} style={styles.secondaryBtn}>
               <BookOpen size={20} />
               <span>
                 <strong style={{ display: 'block' }}>View Casebook Demo</strong>
-                <small style={styles.btnHint}>See explainable dossier</small>
+                <small style={styles.secondaryBtnHint}>See explainable dossier</small>
               </span>
             </button>
           </div>
@@ -59,7 +59,7 @@ export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPagePr
         <ValueCard number="1" title="Prioritize review" tone="#d7d1b0">
           Model scores rank procurement packages so auditors focus on the rows that need careful reading first.
         </ValueCard>
-        <ValueCard number="2" title="Explain each score" tone="#ffffff">
+        <ValueCard number="2" title="Explain each score" tone="#ebe6c9">
           SHAP values show which signals moved a package into the review queue, written for human auditors.
         </ValueCard>
         <ValueCard number="3" title="Preserve the split" tone="#4FA66A">
@@ -216,7 +216,7 @@ const styles: Record<string, CSSProperties> = {
     letterSpacing: '-.06em',
     fontWeight: 900,
     fontFamily: 'var(--lp-font-display)',
-    color: 'var(--lp-white)',
+    color: 'var(--lp-cream-soft)',
   },
   titleAccent: {
     display: 'block',
@@ -242,16 +242,16 @@ const styles: Record<string, CSSProperties> = {
   actions: {
     display: 'flex',
     justifyContent: 'center',
-    gap: 14,
+    gap: 12,
     flexWrap: 'wrap',
   },
   primaryBtn: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
+    gap: 11,
     border: 'none',
-    borderRadius: 16,
-    padding: '16px 28px',
+    borderRadius: 15,
+    padding: '14px 20px',
     background: 'var(--lp-cream)',
     color: 'var(--lp-bg-deep)',
     fontWeight: 800,
@@ -264,10 +264,10 @@ const styles: Record<string, CSSProperties> = {
   secondaryBtn: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
+    gap: 11,
     border: '1px solid rgba(215, 209, 176, .22)',
-    borderRadius: 16,
-    padding: '16px 28px',
+    borderRadius: 15,
+    padding: '14px 20px',
     background: 'rgba(215, 209, 176, .06)',
     color: 'var(--lp-text)',
     fontWeight: 700,
@@ -276,13 +276,19 @@ const styles: Record<string, CSSProperties> = {
     transition: 'border-color .2s, background .2s',
     textAlign: 'left',
   },
-  btnHint: {
+  primaryBtnHint: {
     display: 'block',
     marginTop: 3,
     fontSize: 12,
-    fontWeight: 500,
-    color: 'var(--lp-muted)',
-    opacity: 0.7,
+    fontWeight: 680,
+    color: 'rgba(17, 16, 15, .68)',
+  },
+  secondaryBtnHint: {
+    display: 'block',
+    marginTop: 3,
+    fontSize: 12,
+    fontWeight: 580,
+    color: 'rgba(235, 230, 201, .62)',
   },
   capSection: {
     marginBottom: 64,
