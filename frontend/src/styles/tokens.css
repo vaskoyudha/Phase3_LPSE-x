@@ -1348,7 +1348,8 @@ a:active {
   box-shadow: none;
 }
 
-.app-main--dashboard .app-topbar::after {
+.app-main--dashboard .app-topbar::after,
+.app-main--reviews .app-topbar::after {
   content: '';
   position: absolute;
   right: 0;
@@ -1878,6 +1879,76 @@ a:active {
 .dashboard-activity { padding: 18px; }
 .dashboard-activity ol,
 .dashboard-activity ul { margin: 12px 0; padding-left: 1.2rem; color: #e4ded5; }
+
+.review-desk-page {
+  width: 100%;
+  min-width: 0;
+}
+.review-desk-hero,
+.review-desk-toolbar,
+.review-status-card,
+.review-worklist-card {
+  border: 1px solid var(--lp-line);
+}
+.review-status-card {
+  overflow: hidden;
+}
+.review-status-card::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--review-tone, var(--lp-cream));
+  opacity: 0.68;
+}
+.review-status-card:hover,
+.review-worklist-row:hover {
+  background: rgba(42, 41, 39, 0.94) !important;
+}
+.review-worklist-row:first-child {
+  border-top: 0 !important;
+}
+.review-worklist-row:hover .review-row-action,
+.review-row-action:hover {
+  background: var(--lp-glass-cream-hover) !important;
+  transform: translateY(-1px);
+}
+.review-desk-toolbar input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+@media (max-width: 1180px) {
+  .review-count-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 900px) {
+  .review-desk-hero,
+  .review-desk-toolbar,
+  .review-worklist-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .review-desk-hero__metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .review-row-action {
+    width: fit-content;
+  }
+}
+@media (max-width: 640px) {
+  .review-desk-hero__metrics,
+  .review-count-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .review-desk-hero {
+    background-size: auto 100% !important;
+  }
+  .review-worklist-card .safe-copy {
+    text-align: left !important;
+  }
+}
 .lokasi-map { padding: 16px; display: grid; gap: 14px; background: var(--lp-panel); }
 .lokasi-map__header { display: flex; justify-content: space-between; gap: 14px; align-items: start; flex-wrap: wrap; }
 .lokasi-map__header h2 { margin: 7px 0 4px; }

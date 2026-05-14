@@ -59,6 +59,7 @@ DEFAULT_QUEUE_TOP_N = 50
 MAX_QUEUE_TOP_N = 500
 DEFAULT_DATASET_PAGE_SIZE = 12
 DEFAULT_ARCHIVE_PAGE_SIZE = 100
+DEFAULT_REVIEW_PAGE_SIZE = 100
 MAX_DATASET_PAGE_SIZE = 100
 ARCHIVE_ANALYTICS_POINT_LIMIT = 500
 ARCHIVE_ANALYTICS_PER_TIER_POINTS = 120
@@ -1554,7 +1555,9 @@ def archive_analytics_endpoint(
 def list_reviews(
     status: str = "all",
     search: str = "",
-    top_n: int = Query(default=DEFAULT_QUEUE_TOP_N, ge=1, le=MAX_QUEUE_TOP_N),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=DEFAULT_REVIEW_PAGE_SIZE, ge=1, le=MAX_DATASET_PAGE_SIZE),
+    top_n: int = Query(default=MAX_QUEUE_TOP_N, ge=1, le=MAX_QUEUE_TOP_N),
 ) -> ReviewListResponse:
     _, _, _, queue, _ = _runtime_or_http_error()
     saved_by_case = {review["case_id"]: review for review in _review_store().list_reviews()}
@@ -1577,10 +1580,20 @@ def list_reviews(
         if status not in REVIEW_STATUSES:
             raise HTTPException(status_code=422, detail=f"Unknown review status: {status}")
         items = [item for item in items if item.status == status]
+    total_items = len(items)
+    total_pages = max(1, int(np.ceil(total_items / page_size))) if total_items else 1
+    effective_page = min(page, total_pages)
+    start = (effective_page - 1) * page_size
+    page_items = items[start:start + page_size]
     return ReviewListResponse(
         statuses=REVIEW_STATUSES,
         counts=_review_counts(items),
-        items=items,
+        items=page_items,
+        page=effective_page,
+        page_size=page_size,
+        total_items=total_items,
+        total_pages=total_pages,
+        top_n=top_n,
         guardrail=SAFE_GUARDRAIL_ID,
     )
 

@@ -381,6 +381,11 @@ export interface ReviewListResponse {
   statuses: ReviewStatus[];
   counts: Record<string, number>;
   items: ReviewRecord[];
+  page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  top_n: number;
   guardrail: string;
 }
 

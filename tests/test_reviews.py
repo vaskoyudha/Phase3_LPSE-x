@@ -68,6 +68,21 @@ def test_review_upsert_saves_human_signoff_and_appends_history(monkeypatch, tmp_
     assert listing["items"][0]["is_saved"] is True
 
 
+def test_review_list_paginates_priority_queue(monkeypatch, tmp_path):
+    _use_temp_review_db(monkeypatch, tmp_path)
+
+    response = client.get("/api/reviews?page=2&page_size=2&top_n=5")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["page"] == 2
+    assert payload["page_size"] == 2
+    assert payload["total_items"] == 5
+    assert payload["total_pages"] == 3
+    assert len(payload["items"]) == 2
+    assert payload["items"][0]["case_id"] != payload["items"][1]["case_id"]
+
+
 def test_review_upsert_rejects_unknown_status(monkeypatch, tmp_path):
     _use_temp_review_db(monkeypatch, tmp_path)
     case_id = client.get("/api/demo-state").json()["demo_case_id"]

@@ -214,6 +214,11 @@ const reviewListResponse: ReviewListResponse = {
     Selesai: 0,
   },
   items: [reviewRecord],
+  page: 1,
+  page_size: 100,
+  total_items: 1,
+  total_pages: 1,
+  top_n: 500,
   guardrail: demoState.guardrail,
 };
 
@@ -565,6 +570,57 @@ test('Review Desk is an app-level saved review worklist', async () => {
 
   fireEvent.click(screen.getByRole('button', { name: 'Open sidebar' }));
   expect(within(screen.getByRole('navigation', { name: 'App sidebar navigation' })).getByRole('link', { name: 'Review Desk' })).toHaveAttribute('href', '/reviews');
+  fetchMock.mockRestore();
+});
+
+test('Review Desk requests 100 item pages and pages through the priority queue', async () => {
+  const firstPageReviews = Array.from({ length: 100 }, (_, index) => ({
+    ...reviewRecord,
+    case_id: `page-1-${index}`,
+    package_snapshot: {
+      ...reviewRecord.package_snapshot,
+      package_title: index === 0 ? queueItem.package_title : `Review package ${index + 1}`,
+    },
+  }));
+  const secondPageReview = {
+    ...reviewRecord,
+    case_id: 'page-2-101',
+    package_snapshot: {
+      ...reviewRecord.package_snapshot,
+      package_title: 'Second page review package',
+    },
+  };
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.startsWith('/api/demo-state')) return jsonResponse(demoState);
+    if (url.startsWith('/api/queue')) return jsonResponse(queueResponse);
+    if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
+    if (url.startsWith('/api/archive')) return jsonResponse(datasetResponse);
+    if (url.startsWith('/api/reviews')) {
+      const query = new URLSearchParams(url.split('?')[1] ?? '');
+      const page = Number(query.get('page') ?? '1');
+      return jsonResponse({
+        ...reviewListResponse,
+        page,
+        page_size: 100,
+        total_items: 101,
+        total_pages: 2,
+        top_n: 500,
+        items: page === 1 ? firstPageReviews : [secondPageReview],
+      });
+    }
+    if (url.startsWith('/api/casebook/')) return jsonResponse(casebook);
+    throw new Error(`Unexpected fetch ${url}`);
+  });
+  window.history.pushState(null, '', '/reviews');
+  render(<App />);
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/reviews?page=1&page_size=100&top_n=500'));
+  expect(await screen.findByText(/Showing 1-100 of 101 priority queue packages/i)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /Next review page/i }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/reviews?page=2&page_size=100&top_n=500'));
+  expect(await screen.findByText('Second page review package')).toBeInTheDocument();
+  expect(screen.getByText(/Showing 101-101 of 101 priority queue packages/i)).toBeInTheDocument();
   fetchMock.mockRestore();
 });
 
