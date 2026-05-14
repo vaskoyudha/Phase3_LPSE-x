@@ -522,3 +522,34 @@ test('App sidebar opens as a drawer from the topbar and contains only app-level 
   fetchMock.mockRestore();
 });
 
+test('Dashboard floating nav owns Archive and Analytics dashboard subpages', async () => {
+  const routes: Array<{ path: string; current: string | RegExp; content: string | RegExp; absent?: Array<string | RegExp> }> = [
+    { path: '/dashboard', current: 'Overview', content: 'Ringkasan risiko saat ini', absent: ['Tender Archive Explorer', 'Full Archive Risk Analytics'] },
+    { path: '/dashboard/overview', current: 'Overview', content: 'Ringkasan risiko saat ini', absent: ['Tender Archive Explorer', 'Full Archive Risk Analytics'] },
+    { path: '/command-center', current: 'Overview', content: 'Ringkasan risiko saat ini', absent: ['Tender Archive Explorer', 'Full Archive Risk Analytics'] },
+    { path: '/dashboard/archive', current: 'Archive', content: 'Arsip tender lokal' },
+    { path: '/dashboard/analytics', current: 'Analytics', content: 'Analitik risiko arsip' },
+    { path: '/dashboard/locations', current: /Lokasi|Map Distribusi/i, content: 'Peta distribusi wilayah' },
+    { path: '/dashboard/activity', current: 'Activity', content: 'Status operasi dashboard' },
+  ];
+
+  for (const route of routes) {
+    const { fetchMock } = renderAppAt(route.path);
+    await screen.findByText(route.content);
+    const dashboardNav = screen.getByRole('navigation', { name: 'Dashboard sections' });
+    expect(dashboardNav.querySelector('.dashboard-floating-nav__indicator')).toBeInTheDocument();
+    for (const label of dashboardTabLabels) {
+      expect(within(dashboardNav).getByRole('link', { name: label })).toBeInTheDocument();
+    }
+    const activeLink = within(dashboardNav).getByRole('link', { name: route.current });
+    const activeIndex = Array.from<HTMLElement>(dashboardNav.querySelectorAll('a')).indexOf(activeLink);
+    expect(activeLink).toHaveAttribute('aria-current', 'page');
+    expect(dashboardNav).toHaveClass(`dashboard-floating-nav--active-${activeIndex}`);
+    for (const absent of route.absent ?? []) {
+      expect(screen.queryByText(absent)).not.toBeInTheDocument();
+    }
+    fetchMock.mockRestore();
+    cleanup();
+  }
+});
+
