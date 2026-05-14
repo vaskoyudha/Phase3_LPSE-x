@@ -23,4 +23,5 @@ async function putJson<T>(url: string, payload: unknown): Promise<T> {
 
 export const api = {
   demoState: () => getJson<DemoState>('/api/demo-state'),
+  inferenceStatus: () => getJson<InferenceStatus>('/api/inference-status'),
 };
