@@ -1,0 +1,6 @@
+import { Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { QueueResponse } from '../../types/api';
+const DISTRIBUTION_COLORS = ['#E05A4F', '#D8A42F', '#4FA66A', '#22D3EE'];
+
+export function RiskCharts({ queue }: { queue: QueueResponse | null }) { return <div className="grid grid-cols-2 gap-3"><div className="glass card h-64"><h3>Risk Distribution</h3><ResponsiveContainer><PieChart><Pie data={queue?.distribution||[]} dataKey="count" nameKey="label" outerRadius={78}>{(queue?.distribution||[]).map((d, index)=><Cell key={d.label} fill={DISTRIBUTION_COLORS[index % DISTRIBUTION_COLORS.length]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer></div><div className="glass card h-64"><h3>Risk Trend</h3><ResponsiveContainer><LineChart data={queue?.trend||[]}><XAxis dataKey="bucket"/><YAxis/><Tooltip/><Line dataKey="average_priority" stroke="#4FA66A"/><Line dataKey="review_count" stroke="#22D3EE"/></LineChart></ResponsiveContainer></div></div>; }
+export function MiniQueueBars({ queue }: { queue: QueueResponse | null }) { return <ResponsiveContainer width="100%" height={110}><BarChart data={(queue?.items||[]).slice(0,8)}><Bar dataKey="probability" fill="#22D3EE"/></BarChart></ResponsiveContainer>; }
