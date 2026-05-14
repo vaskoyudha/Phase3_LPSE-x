@@ -1038,3 +1038,47 @@ test('ScoredDatasetExplorer shows the full archive is connected to visible model
   expect(selected).toBe(queueItem.case_id);
 });
 
+test('ShapFactorBars renders signed zero-axis contributions', () => {
+  render(<ShapFactorBars factors={casebook.factors} />);
+  expect(screen.getByText('Mengapa paket ini diprioritaskan untuk review')).toBeInTheDocument();
+  expect(screen.getAllByLabelText('zero-axis signed contribution')).toHaveLength(casebook.factors.length);
+  expect(screen.getByText('← Menurunkan Prioritas Review')).toBeInTheDocument();
+  expect(screen.getByText('Meningkatkan Prioritas Review →')).toBeInTheDocument();
+});
+
+test('CasebookPage renders dossier layout, reviewer questions, export, and safe reminder', () => {
+  render(<CasebookPage casebook={casebook} exportUrl="/api/casebook/10%3Aocds-a/export.html" onBack={() => undefined} />);
+  expect(screen.getByText('Explainable Casebook')).toBeInTheDocument();
+  expect(screen.getByText('Tender hub')).toBeInTheDocument();
+  expect(screen.getByText('Context')).toBeInTheDocument();
+  expect(screen.getByText('Signal')).toBeInTheDocument();
+  expect(screen.getByText('Verify')).toBeInTheDocument();
+  expect(screen.getByText('Package details')).toBeInTheDocument();
+  expect(screen.getByText('Risk summary')).toBeInTheDocument();
+  expect(screen.getAllByText('Pembangunan Jalan Lingkar Selatan Kab. X').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Risiko Tinggi').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Held-out').length).toBeGreaterThan(0);
+  expect(screen.getByText('Why this case is prioritized')).toBeInTheDocument();
+  expect(screen.getByText('Signals to verify')).toBeInTheDocument();
+  expect(screen.getByText('Apa arti SHAP?')).toBeInTheDocument();
+  expect(screen.getAllByText(/Checklist:/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Tinjau daftar paket sebelumnya/i).length).toBeGreaterThan(0);
+  expect(screen.getByText('Export Casebook')).toHaveAttribute('href', '/api/casebook/10%3Aocds-a/export.html');
+  expect(screen.getByText(/triase risiko, prioritas review, bukan tuduhan pelanggaran/i)).toBeInTheDocument();
+});
+
+test('CasebookPage keeps the casebook background static', () => {
+  const { container } = render(<CasebookPage casebook={casebook} exportUrl="/api/casebook/10%3Aocds-a/export.html" onBack={() => undefined} />);
+  expect(container.querySelector('.casebook-grid')).toBeInTheDocument();
+  expect(container.querySelector('.casebook-flow-lines')).not.toBeInTheDocument();
+});
+
+test('ModelTransparencyPage renders casebook-derived transparency and guardrails', () => {
+  render(<ModelTransparencyPage initialCasebook={casebook} initialDemoState={demoState} />);
+  expect(screen.getByText('Model Transparency')).toBeInTheDocument();
+  expect(screen.getByText('Top Risk Drivers')).toBeInTheDocument();
+  expect(screen.getByText('Prediction Summary')).toBeInTheDocument();
+  expect(screen.getAllByText('92%').length).toBeGreaterThan(0);
+  expect(screen.getByText('Bukan tuduhan pelanggaran')).toBeInTheDocument();
+  expect(screen.getByText(/triase risiko dan prioritas review, bukan tuduhan pelanggaran/i)).toBeInTheDocument();
+});
