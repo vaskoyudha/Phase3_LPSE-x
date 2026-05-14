@@ -30,8 +30,8 @@ def test_model_only_runtime_surfaces_do_not_start_training_or_scraping():
 
 def test_docs_describe_local_offline_demo_boundaries():
     docs = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    team members = (PROJECT_ROOT / "PROJECT_GUIDELINES.md").read_text(encoding="utf-8")
-    combined = f"{docs}\n{team members}".lower()
+    team_members_file = (PROJECT_ROOT / "PROJECT_GUIDELINES.md").read_text(encoding="utf-8")
+    combined = f"{docs}\n{team_members_file}".lower()
 
     assert "offline" in combined
     assert "no live scraping" in combined or "tanpa scraping" in combined
