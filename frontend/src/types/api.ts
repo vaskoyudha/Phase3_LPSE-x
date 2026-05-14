@@ -150,3 +150,39 @@ export interface ArchiveRow extends DatasetRow {
   buyer_region_key?: string;
   region_key?: string;
 }
+
+export interface ArchiveMonthlyRiskTrend {
+  month: string;
+  tinggi: number;
+  sedang: number;
+  rendah: number;
+  total: number;
+  average_priority: number;
+}
+
+export interface ArchiveDateRange {
+  start_month: string | null;
+  end_month: string | null;
+  valid_date_rows: number;
+  invalid_date_rows: number;
+}
+
+export interface ArchiveBrowserResponse {
+  total_rows: number;
+  matched_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  archive_scope: string;
+  heldout_rows: number;
+  train_rows: number;
+  risk_distribution: Record<string, number>;
+  split_distribution: Record<string, number>;
+  monthly_risk_trend: ArchiveMonthlyRiskTrend[];
+  date_range: ArchiveDateRange;
+  columns: string[];
+  items: ArchiveRow[];
+  inference_status: ArchiveInferenceStatus;
+  display_note: string;
+  guardrail: string;
+}
