@@ -47,4 +47,5 @@ export const api = {
   review: (caseId: string) => getJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`),
   saveReview: (caseId: string, payload: ReviewUpdateRequest) => putJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`, payload),
   casebook: (caseId: string) => getJson<CasebookPayload>(`/api/casebook/${encodeURIComponent(caseId)}`),
+  exportUrl: (caseId: string) => `/api/casebook/${encodeURIComponent(caseId)}/export.html`,
 };
