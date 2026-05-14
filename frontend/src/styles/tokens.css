@@ -1,0 +1,14 @@
+:root {
+  color-scheme: dark;
+  --lp-bg: #0b1323;
+  --lp-bg-deep: #070d18;
+  --lp-panel: #111a2e;
+  --lp-panel-soft: rgba(17, 26, 46, 0.72);
+  --lp-border: rgba(255, 255, 255, 0.14);
+  --lp-text: #f8fafc;
+  --lp-muted: #9ca3af;
+  --lp-cyan: #22d3ee;
+  --lp-emerald: #4fa66a;
+  --lp-amber: #d8a42f;
+  --lp-red: #e05a4f;
+}
