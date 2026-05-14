@@ -479,7 +479,7 @@ ol li span {{ width:18px; height:18px; border:1px solid rgba(148,163,184,.7); bo
   </section>
 
   <section class="section">
-    <div class="section-title"><span class="icon">3</span> Explainability — Top Risk Factors <span style="color:#9CA3AF;text-transform:none;font-weight:500">(Top 5 SHAP contribution)</span></div>
+    <div class="section-title"><span class="icon">3</span> Explainable AI — Top Risk Factors <span style="color:#9CA3AF;text-transform:none;font-weight:500">(Top 5 SHAP contribution)</span></div>
     <table><thead><tr><th>Rank</th><th>Faktor Prioritas Review (Fitur)</th><th>Nilai</th><th>Dampak</th><th>Kontribusi (SHAP)</th></tr></thead><tbody>{''.join(factor_rows)}</tbody></table>
   </section>
 

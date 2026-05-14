@@ -1,22 +1,19 @@
 import type { CSSProperties } from 'react';
-import { Download, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Download, RotateCcw } from 'lucide-react';
 import type { CasebookPayload } from '../types/api';
 import { CasebookHubCard } from '../components/casebook/CasebookHubCard';
 import { ShapFactorBars } from '../components/casebook/ShapFactorBars';
 import { RiskSignalsToVerify, RiskStoryRail } from '../components/casebook/RiskStoryRail';
-import { RiskSummaryCard } from '../components/casebook/RiskSummaryCard';
 import { ProvenanceDrawer } from '../components/shared/ProvenanceDrawer';
 import { ReviewDrawer } from '../components/reviews/ReviewDrawer';
 
 export function CasebookPage({ casebook, exportUrl, onBack, reviewOpen = false }: { casebook: CasebookPayload; exportUrl: string; onBack: () => void; reviewOpen?: boolean }) {
   return (
     <main className="casebook-shell" style={styles.shell}>
-      <header className="card" style={styles.header}>
-        <span style={styles.eyebrow}>Held-out dossier</span>
-        <span style={styles.splitChip}>Held-out</span>
-        <h1 style={styles.title}>Explainable Casebook</h1>
-        <p className="safe-copy" style={styles.safeCopy}>triase risiko · prioritas review · bukan tuduhan pelanggaran</p>
-      </header>
+      <div style={styles.actionRow}>
+        <button onClick={onBack} type="button" style={styles.backButton}><ArrowLeft size={16} /> Back to Dashboard</button>
+      </div>
+
       <div className="casebook-grid" style={styles.grid}>
         <section className="casebook-panel-in casebook-panel-in--main" style={styles.centerRail}>
           <CasebookHubCard casebook={casebook} />
@@ -26,7 +23,6 @@ export function CasebookPage({ casebook, exportUrl, onBack, reviewOpen = false }
         <aside className="casebook-panel-in casebook-right" style={styles.rightRailColumn}>
           <div className="casebook-right__sticky" style={styles.rightRail}>
             {reviewOpen && <ReviewDrawer caseId={casebook.case_id} open={reviewOpen} />}
-            <RiskSummaryCard casebook={casebook} />
             <RiskStoryRail casebook={casebook} />
           </div>
         </aside>
@@ -53,6 +49,23 @@ const styles: Record<string, CSSProperties> = {
     display: 'grid',
     gap: 14,
   },
+  actionRow: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  backButton: {
+    border: '1px solid rgba(255,255,255,.12)',
+    borderRadius: 999,
+    background: 'rgba(255,255,255,.07)',
+    color: 'var(--lp-text-soft)',
+    padding: '.68rem .9rem',
+    fontWeight: 780,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 7,
+    whiteSpace: 'nowrap',
+  },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'minmax(0, 2.25fr) minmax(320px, .86fr)',
@@ -63,11 +76,6 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 28,
     background: 'rgba(255,255,255,.018)',
   },
-  header: { padding: 18, display: 'grid', gap: 6, background: 'rgba(255,255,255,.035)' },
-  eyebrow: { color: 'var(--lp-cream)', fontSize: 12, fontWeight: 860, letterSpacing: '.06em', textTransform: 'uppercase' },
-  splitChip: { justifySelf: 'start', borderRadius: 999, padding: '.28rem .55rem', color: '#4FA66A', background: 'rgba(79,166,106,.14)', border: '1px solid rgba(79,166,106,.34)', fontSize: 11, fontWeight: 900 },
-  title: { margin: 0, lineHeight: 1, letterSpacing: '-.045em' },
-  safeCopy: { margin: 0, color: 'var(--lp-text-soft)', fontWeight: 760 },
   centerRail: { minWidth: 0, display: 'grid', gap: 14, position: 'relative', zIndex: 1 },
   rightRailColumn: { minWidth: 0, position: 'relative', zIndex: 1 },
   rightRail: { minWidth: 0, display: 'grid', gap: 16, alignContent: 'start' },

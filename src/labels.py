@@ -329,151 +329,116 @@ def flag_single_bidder(df: pd.DataFrame) -> pd.Series:
     """Red flag: single bidder (numberOfTenderers == 1).
 
     Indicates limited competition, a common collusion signal.
-    Returns a binary (0/1) pd.Series.
     """
     n = df.get("tender_numberOfTenderers")
     if n is None:
-        return pd.Series(0, index=df.index, dtype=int)
-    return (n.fillna(-1).astype(float) == 1.0).astype(int)
+        return pd.Series(False, index=df.index, dtype=bool)
+    return n.fillna(-1).astype(float) == 1.0
 
 
 def flag_short_title(df: pd.DataFrame, threshold: int = 20) -> pd.Series:
     """Red flag: tender title shorter than threshold characters.
 
     Short titles may indicate copy-paste or template fraud.
-    Returns a binary (0/1) pd.Series.
     """
     title = df.get("tender_title", pd.Series("", index=df.index))
-    return (title.fillna("").str.len() < threshold).astype(int)
+    return title.fillna("").str.len() < threshold
 
 
 def flag_short_description(df: pd.DataFrame, threshold: int = 60) -> pd.Series:
     """Red flag: tender description shorter than threshold characters.
 
     Short descriptions suggest inadequate specification.
-    Returns a binary (0/1) pd.Series.
     """
     desc = df.get("tender_description", pd.Series("", index=df.index))
-    return (desc.fillna("").str.len() < threshold).astype(int)
+    return desc.fillna("").str.len() < threshold
 
 
 def flag_q4_timing(df: pd.DataFrame) -> pd.Series:
     """Red flag: procurement in Q4 (Oct-Dec).
 
     Year-end fiscal rush correlates with higher irregularity risk.
-    Returns a binary (0/1) pd.Series.
     """
     date_col = "tender_datePublished"
     if date_col not in df.columns:
-        return pd.Series(0, index=df.index, dtype=int)
+        return pd.Series(False, index=df.index, dtype=bool)
 
     month = pd.to_datetime(df[date_col], errors="coerce").dt.month
-    return month.isin([10, 11, 12]).fillna(False).astype(int)
+    return month.isin([10, 11, 12]).fillna(False)
 
 
-def flag_price_deviation(df: pd.DataFrame) -> pd.Series:
+def flag_price_deviation(
+    df: pd.DataFrame,
+    low_threshold: float = 0.7,
+    high_threshold: float = 1.0,
+) -> pd.Series:
     """Red flag: award value deviates significantly from tender estimate.
 
     A ratio very close to 1.0 (ceiling price) or very low (<0.7) is suspicious.
-    Returns a binary (0/1) pd.Series.
     """
     tender_val = pd.to_numeric(df.get("tender_value_amount"), errors="coerce")
     award_val = pd.to_numeric(df.get("award_value_amount"), errors="coerce")
 
     ratio = award_val / tender_val.replace(0, np.nan)
 
-    # Flag if ratio >= 1.0 (suspiciously close to ceiling)
-    # or ratio <= 0.7 (suspiciously low)
-    suspicious = (ratio >= 1.0) | (ratio <= 0.7)
-    return suspicious.fillna(False).astype(int)
+    # Flag if ratio >= high_threshold (suspiciously close to ceiling)
+    # or ratio <= low_threshold (suspiciously low)
+    suspicious = (ratio >= high_threshold) | (ratio <= low_threshold)
+    return suspicious.fillna(False)
 
 
 def flag_high_value(df: pd.DataFrame, percentile: float = 0.9) -> pd.Series:
     """Red flag: contract value above the given percentile.
 
     High-value contracts attract more corruption risk.
-    Returns a binary (0/1) pd.Series.
     """
     val = pd.to_numeric(df.get("tender_value_amount"), errors="coerce")
     threshold = val.quantile(percentile)
-    return (val >= threshold).fillna(False).astype(int)
+    return (val >= threshold).fillna(False).astype(bool)
 
 
 def flag_repeat_pair_history(df: pd.DataFrame, min_repeat: int = 2) -> pd.Series:
-    """Red flag: buyer-supplier pair has repeated historical interactions.
-
-    Uses the pre-computed feature column if available, otherwise computes
-    pair counts from raw buyer_id/supplier_id columns.
-    Returns a binary (0/1) pd.Series.
-    """
+    """Red flag: buyer-supplier pair has repeated historical interactions."""
     col = "f_buyer_supplier_repeat_count"
-    if col in df.columns:
-        repeat_count = pd.to_numeric(df[col], errors="coerce")
-        return (repeat_count >= min_repeat).fillna(0).astype(int)
+    if col not in df.columns:
+        return pd.Series(False, index=df.index, dtype=bool)
 
-    # Fallback: compute from raw columns
-    buyer = df.get("buyer_id", pd.Series(dtype="object", index=df.index))
-    supplier = df.get("supplier_id", pd.Series(dtype="object", index=df.index))
-    # Only count pairs where both buyer and supplier are non-null
-    valid_mask = buyer.notna() & supplier.notna()
-    pair = buyer.astype(str) + "||" + supplier.astype(str)
-    pair_counts = pair.where(valid_mask).map(pair[valid_mask].value_counts())
-    return (pair_counts >= min_repeat).fillna(0).astype(int)
+    repeat_count = pd.to_numeric(df[col], errors="coerce")
+    return (repeat_count >= min_repeat).fillna(False).astype(bool)
 
 
-def flag_supplier_recent_surge(df: pd.DataFrame) -> pd.Series:
-    """Red flag: supplier has a recent surge in 90-day award activity.
-
-    Uses the pre-computed feature column if available, otherwise computes
-    from raw supplier_id column using total occurrence count as proxy.
-    Returns a binary (0/1) pd.Series.
-    """
-    min_recent_awards = 3
+def flag_supplier_recent_surge(
+    df: pd.DataFrame,
+    min_recent_awards: int = 3,
+) -> pd.Series:
+    """Red flag: supplier has a recent surge in 90-day award activity."""
     col = "f_supplier_recent_90d_award_count"
-    if col in df.columns:
-        recent_awards = pd.to_numeric(df[col], errors="coerce")
-        return (recent_awards >= min_recent_awards).fillna(0).astype(int)
+    if col not in df.columns:
+        return pd.Series(False, index=df.index, dtype=bool)
 
-    # Fallback: compute from raw columns (approximate using total supplier count)
-    supplier = df.get("supplier_id", pd.Series(dtype="object", index=df.index))
-    valid_mask = supplier.notna()
-    supplier_counts = supplier.where(valid_mask).map(
-        supplier[valid_mask].value_counts()
-    )
-    return (supplier_counts >= min_recent_awards).fillna(0).astype(int)
+    recent_awards = pd.to_numeric(df[col], errors="coerce")
+    return (recent_awards >= min_recent_awards).fillna(False).astype(bool)
 
 
 def flag_buyer_value_spike(df: pd.DataFrame, z_threshold: float = 2.0) -> pd.Series:
-    """Red flag: tender value is an unusually large spike for the buyer.
-
-    Uses the pre-computed feature column if available, otherwise computes
-    z-score from raw buyer_id and tender_value_amount columns.
-    Returns a binary (0/1) pd.Series.
-    """
+    """Red flag: tender value is an unusually large spike for the buyer."""
     col = "f_tender_value_zscore_buyer"
-    if col in df.columns:
-        buyer_zscore = pd.to_numeric(df[col], errors="coerce")
-        return (buyer_zscore >= z_threshold).fillna(0).astype(int)
+    if col not in df.columns:
+        return pd.Series(False, index=df.index, dtype=bool)
 
-    # Fallback: compute z-score per buyer from raw columns
-    buyer = df.get("buyer_id", pd.Series("", index=df.index)).fillna("")
-    val = pd.to_numeric(df.get("tender_value_amount"), errors="coerce")
-    buyer_mean = val.groupby(buyer).transform("mean")
-    buyer_std = val.groupby(buyer).transform("std")
-    zscore = (val - buyer_mean) / buyer_std.replace(0, np.nan)
-    return (zscore >= z_threshold).fillna(0).astype(int)
+    buyer_zscore = pd.to_numeric(df[col], errors="coerce")
+    return (buyer_zscore >= z_threshold).fillna(False).astype(bool)
 
 
 def flag_direct_procurement(df: pd.DataFrame) -> pd.Series:
     """Red flag: non-competitive procurement method.
 
     Direct / limited procurement bypasses open competition.
-    Returns a binary (0/1) pd.Series.
     """
     method = df.get("tender_procurementMethod", pd.Series("", index=df.index))
     method_lower = method.fillna("").str.lower()
-    # In Indonesian OCDS: "direct", "limited", "selective", "penunjukan langsung"
-    return method_lower.isin(["direct", "limited", "selective"]).astype(int)
+    # In Indonesian OCDS: "direct", "limited", "penunjukan langsung"
+    return method_lower.isin(["direct", "limited", "selective"])
 
 
 # ---------------------------------------------------------------------------
@@ -482,7 +447,6 @@ def flag_direct_procurement(df: pd.DataFrame) -> pd.Series:
 
 # All available red-flag functions
 RED_FLAG_FUNCTIONS = {
-    "single_bidder": flag_single_bidder,
     "short_title": flag_short_title,
     "short_description": flag_short_description,
     "q4_timing": flag_q4_timing,
@@ -491,7 +455,6 @@ RED_FLAG_FUNCTIONS = {
     "repeat_pair_history": flag_repeat_pair_history,
     "supplier_recent_surge": flag_supplier_recent_surge,
     "buyer_value_spike": flag_buyer_value_spike,
-    "direct_procurement": flag_direct_procurement,
 }
 
 
@@ -501,12 +464,7 @@ def compute_red_flags(df: pd.DataFrame) -> pd.DataFrame:
     ``df`` is expected to be the merged label-input frame that combines
     raw procurement columns with engineered feature columns.
 
-    Returns a DataFrame with boolean (0/1) columns, one per flag.
-
-    DISCLAIMER: These flags are heuristic risk indicators derived from
-    procurement data patterns. They are NOT verified fraud findings,
-    legal determinations, or evidence of wrongdoing. They serve as
-    training signals for the risk scoring model only.
+    Returns a DataFrame with boolean columns, one per flag.
     """
     flags = pd.DataFrame(index=df.index)
     for name, func in RED_FLAG_FUNCTIONS.items():

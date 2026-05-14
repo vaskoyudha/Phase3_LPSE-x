@@ -19,23 +19,12 @@ def test_inference_notebook_uses_submitted_artifacts_and_full_test_split():
     assert "train_data/" not in source
 
 
-def test_model_only_repo_excludes_backend_and_frontend_implementation():
-    forbidden_paths = [
-        PROJECT_ROOT / "frontend",
-        PROJECT_ROOT / "app.py",
-        PROJECT_ROOT / "src" / "api.py",
-        PROJECT_ROOT / "src" / "api_schemas.py",
-        PROJECT_ROOT / "src" / "reviews.py",
-        PROJECT_ROOT / "package.json",
-        PROJECT_ROOT / "package-lock.json",
-    ]
-    assert [str(path.relative_to(PROJECT_ROOT)) for path in forbidden_paths if path.exists()] == []
-
-
-def test_requirements_are_model_only_not_backend_or_frontend_runtime():
-    requirements = (PROJECT_ROOT / "requirements.txt").read_text(encoding="utf-8").lower()
-    assert "xgboost" in requirements
-    assert "onnxruntime" in requirements
-    assert "fastapi" not in requirements
-    assert "uvicorn" not in requirements
-    assert "streamlit" not in requirements
+def test_frontend_dependencies_are_exactly_pinned_not_latest():
+    package = json.loads((PROJECT_ROOT / "frontend" / "package.json").read_text(encoding="utf-8"))
+    specs = {
+        **package.get("dependencies", {}),
+        **package.get("devDependencies", {}),
+    }
+    assert specs
+    floating = {name: spec for name, spec in specs.items() if spec == "latest" or str(spec).startswith("^")}
+    assert floating == {}

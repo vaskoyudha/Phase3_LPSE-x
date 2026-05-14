@@ -14,6 +14,7 @@ import { ScoredDatasetExplorer } from '../components/dashboard/ScoredDatasetExpl
 import { ArchiveAnalyticsPanel } from '../components/dashboard/ArchiveAnalyticsPanel';
 import { LokasiMap } from '../components/dashboard/LokasiMap';
 import { NusantaraAtlasCarousel } from '../components/dashboard/NusantaraAtlasCarousel';
+import dashboardSectionIntroBackground from '../assets/dashboard/dashboard-section-intro-background.jpeg';
 
 const defaultFilters: Filters = { search: '', risk: 'all', topN: '50', buyer: '', supplier: '' };
 type DashboardQueryState = { filters: Filters; datasetPage: number; archiveSplit: string; archiveSort: string; selectedRegionKey: string };
@@ -40,7 +41,6 @@ const INFERENCE_PANEL_ID = 'dashboard-inference-panel';
 const SELECTED_CASE_PANEL_ID = 'dashboard-selected-case-panel';
 const RIGHT_RAIL_STICKY_TOP = 104;
 const RIGHT_RAIL_STICKY_BOTTOM = 0;
-const ARCHIVE_PAGE_SIZE = 100;
 const PROFILE_NAME = 'Vasco Yudha';
 const PROFILE_ROLE = 'LPSE-X Risk Analyst';
 export type DashboardTab = 'overview' | 'archive' | 'analytics' | 'locations' | 'activity';
@@ -258,7 +258,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
     let alive = true;
     const params = new URLSearchParams();
     params.set('page', String(datasetPage));
-    params.set('page_size', String(ARCHIVE_PAGE_SIZE));
+    params.set('page_size', '100');
     if (filters.risk && filters.risk !== 'all') params.set('risk', filters.risk);
     if (filters.search.trim()) params.set('search', filters.search.trim());
     if (filters.buyer) params.set('buyer', filters.buyer);
@@ -378,7 +378,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
           </div>}
           {activeTab === 'analytics' && <ArchiveAnalyticsPanel analytics={archiveAnalytics} loading={archiveAnalyticsLoading} error={archiveAnalyticsError} activeRisk={filters.risk} onRiskFilter={setRiskFromAnalytics} onSelectPoint={selectAnalyticsPoint} monthlyTrends={archiveAnalytics?.monthly_trends ?? dataset?.monthly_risk_trend ?? []} dateRange={dataset?.date_range} />}
           {activeTab === 'overview' && <RiskQueueTable items={visibleItems} selectedId={selected?.case_id} onSelect={onSelect} />}
-          {activeTab === 'archive' && <ScoredDatasetExplorer ref={archiveDetailsRef} dataset={dataset} loading={datasetLoading} error={datasetError} selectedId={selected?.case_id} splitFilter={archiveSplit} sort={archiveSort} previewRow={datasetSelectedRow} onSplitChange={setArchiveSplit} onSortChange={setArchiveSort} onSelect={selectDatasetRow} onPageChange={setDatasetPage} />}
+          {activeTab === 'archive' && <ScoredDatasetExplorer ref={archiveDetailsRef} dataset={dataset} loading={datasetLoading} error={datasetError} selectedId={selected?.case_id} splitFilter={archiveSplit} sort={archiveSort} searchValue={filters.search} onSplitChange={setArchiveSplit} onSortChange={setArchiveSort} onSearchChange={(search) => { setDatasetPage(1); setFilters((current) => ({ ...current, search })); }} onSelect={selectDatasetRow} onPageChange={setDatasetPage} />}
           {activeTab === 'locations' && <LokasiMap analytics={archiveAnalytics} loading={archiveAnalyticsLoading} selectedRegionKey={selectedRegionKey} onSelectRegion={selectRegion} />}
           {activeTab === 'activity' && <ActivityTimeline dataset={dataset} analytics={archiveAnalytics} selectedRegionKey={selectedRegionKey} filters={filters} archiveSplit={archiveSplit} archiveSort={archiveSort} status={queue.inference_status ?? demoState.inference_status} />}
         </section>
@@ -736,7 +736,7 @@ function ArchiveRailCards({ dataset, splitFilter, sort, selectedRegionKey }: { d
   const cards = [
     { label: 'Matched rows', value: formatNumber(dataset?.matched_count), note: 'sesuai filter aktif', Icon: CheckCircle, tone: 'var(--lp-emerald)' },
     { label: 'Total archive', value: formatNumber(dataset?.total_rows), note: dataset?.archive_scope ?? 'all local prepared data', Icon: Database, tone: 'var(--lp-cream)' },
-    { label: 'Rows per page', value: formatNumber(dataset?.page_size), note: 'kontrak arsip 100 baris', Icon: Stack, tone: 'var(--lp-cream)' },
+    { label: 'Rows per page', value: formatNumber(dataset?.page_size), note: 'kontrak arsip lokal', Icon: Stack, tone: 'var(--lp-cream)' },
     { label: 'Split view', value: splitFilter === 'all' ? 'Semua split' : splitFilter, note: sort === 'risk_desc' ? 'urut risiko tertinggi' : 'sort aktif', Icon: Funnel, tone: 'var(--lp-amber)' },
   ];
 
@@ -763,7 +763,6 @@ function ArchiveRailCards({ dataset, splitFilter, sort, selectedRegionKey }: { d
 function DashboardSectionIntro({ tab }: { tab: DashboardTabDefinition }) {
   return (
     <section className="card dashboard-section-intro" style={styles.sectionIntro} aria-label={`${tab.label} dashboard intro`}>
-      <span aria-hidden="true" style={styles.sectionIntroLine} />
       <div style={styles.sectionIntroBody}>
         <div>
           <h2 style={styles.sectionIntroTitle}>{tab.title}</h2>
@@ -1085,21 +1084,15 @@ const styles: Record<string, CSSProperties> = {
     gap: 8,
     overflow: 'hidden',
     position: 'relative',
-    background: 'rgba(18, 16, 12, 0.88)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    border: '1px solid rgba(215, 209, 176, 0.18)',
+    backgroundImage: `url(${dashboardSectionIntroBackground})`,
+    backgroundPosition: 'calc(50% - 18px) center',
+    backgroundSize: 'calc(100% + 44px) auto',
+    border: '1px solid rgba(255, 255, 255, 0.46)',
+    outline: '1px solid rgba(215, 209, 176, 0.28)',
+    outlineOffset: '-3px',
     borderRadius: 'var(--lp-radius-md)',
     boxShadow: 'none',
     color: 'var(--lp-text-soft)',
-  },
-  sectionIntroLine: {
-    position: 'absolute',
-    inset: '0 auto auto 12px',
-    width: 112,
-    height: 2,
-    background: 'var(--lp-cream)',
-    opacity: .5,
   },
   sectionIntroBody: { display: 'grid', gap: 4, alignItems: 'center', justifyItems: 'center', textAlign: 'center' },
   sectionIntroTitle: { margin: 0, color: '#FFFFFF', fontSize: 'clamp(1.45rem, 2vw, 2rem)', lineHeight: 1.05, letterSpacing: '-.035em', textWrap: 'balance' },

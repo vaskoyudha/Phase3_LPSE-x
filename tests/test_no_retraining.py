@@ -35,10 +35,10 @@ def test_product_demo_surfaces_do_not_start_training_or_scraping():
 
 def test_docs_describe_local_offline_demo_boundaries():
     docs = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
-    guidelines = (PROJECT_ROOT / "PROJECT_GUIDELINES.md").read_text(encoding="utf-8")
-    combined = f"{docs}\n{guidelines}".lower()
+    script = (PROJECT_ROOT / "DEMO_SCRIPT.md").read_text(encoding="utf-8")
+    combined = f"{docs}\n{script}".lower()
 
     assert "offline" in combined
-    assert "scraping" in combined and ("must not" in combined or "tidak ada" in combined)
-    assert "fit(" in combined or "retraining" in combined or "training" in combined
-    assert "cloud" in combined and ("no cloud" in combined or "tidak ada" in combined)
+    assert "tanpa scraping" in combined
+    assert "tanpa retraining" in combined
+    assert "tanpa cloud" in combined

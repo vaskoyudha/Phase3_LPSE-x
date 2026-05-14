@@ -36,91 +36,34 @@ FEATURE_CATALOG: list[str] = []
 
 
 def _to_numeric(series: pd.Series | None) -> pd.Series:
-    """Convert to numeric, coercing errors to NaN, then fill NaN with 0.
-
-    Parameters
-    ----------
-    series : pd.Series | None
-        Input series to convert. If None, returns an empty float64 Series.
-
-    Returns
-    -------
-    pd.Series
-        Numeric series with all NaN values replaced by 0.
-    """
+    """Convert to numeric, coercing errors to NaN."""
     if series is None:
         return pd.Series(dtype="float64")
-    return pd.to_numeric(series, errors="coerce").fillna(0)
+    return pd.to_numeric(series, errors="coerce")
 
 
 def _safe_log1p(series: pd.Series | None) -> pd.Series:
-    """Apply np.log1p to a numeric series, handling None/NaN gracefully.
-
-    Parameters
-    ----------
-    series : pd.Series | None
-        Input series. If None, returns an empty float64 Series.
-        Non-numeric values are coerced to NaN then treated as 0.
-
-    Returns
-    -------
-    pd.Series
-        log1p-transformed numeric series. Negative values are clipped to 0
-        before transformation. NaN values produce log1p(0) = 0.
-    """
+    """Log1p transform, handling NaN, negatives, and None."""
     if series is None:
         return pd.Series(dtype="float64")
-    vals = pd.to_numeric(series, errors="coerce").fillna(0)
+    vals = _to_numeric(series)
     return np.log1p(vals.clip(lower=0))
 
 
 def _safe_len(series: pd.Series) -> pd.Series:
-    """Get string length of each element, returning 0 for NaN/None.
-
-    Parameters
-    ----------
-    series : pd.Series
-        Input series of strings (or mixed types).
-
-    Returns
-    -------
-    pd.Series
-        Integer series of string lengths. NaN/None values produce length 0.
-    """
+    """String length, handling NaN."""
     return series.fillna("").astype(str).str.len()
 
 
 def _safe_token_count(series: pd.Series | None) -> pd.Series:
-    """Count whitespace-separated tokens in a string series.
-
-    Parameters
-    ----------
-    series : pd.Series | None
-        Input series of strings. If None, returns an empty float64 Series.
-
-    Returns
-    -------
-    pd.Series
-        Numeric series of token counts. NaN/None values produce count 0.
-    """
+    """Whitespace token count, handling NaN and missing series."""
     if series is None:
         return pd.Series(dtype="float64")
     return series.fillna("").astype(str).str.split().str.len().astype(float)
 
 
 def _parse_dates(series: pd.Series) -> pd.Series:
-    """Parse a series to datetime, coercing errors to NaT.
-
-    Parameters
-    ----------
-    series : pd.Series
-        Input series with date-like values.
-
-    Returns
-    -------
-    pd.Series
-        Datetime series (UTC-aware). Unparseable values become NaT.
-    """
+    """Parse dates to datetime, coercing errors."""
     return pd.to_datetime(series, errors="coerce", utc=True)
 
 
@@ -143,14 +86,11 @@ def tier1_features(df: pd.DataFrame) -> pd.DataFrame:
     feats["f_award_value_log"] = _safe_log1p(df.get("award_value_amount"))
 
     # 3. Price deviation ratio (award / tender estimate)
-    # Use raw numeric (without fillna) so division by missing stays NaN
-    tender_val = pd.to_numeric(
-        df.get("tender_value_amount", pd.Series(np.nan, index=df.index)),
-        errors="coerce",
+    tender_val = _to_numeric(
+        df.get("tender_value_amount", pd.Series(np.nan, index=df.index))
     )
-    award_val = pd.to_numeric(
-        df.get("award_value_amount", pd.Series(np.nan, index=df.index)),
-        errors="coerce",
+    award_val = _to_numeric(
+        df.get("award_value_amount", pd.Series(np.nan, index=df.index))
     )
     feats["f_price_deviation_ratio"] = award_val / tender_val.replace(0, np.nan)
 
@@ -188,10 +128,7 @@ def tier1_features(df: pd.DataFrame) -> pd.DataFrame:
     ).astype(float)
 
     # 10. Tender value missingness flag
-    feats["f_tender_value_missing"] = pd.to_numeric(
-        df.get("tender_value_amount", pd.Series(np.nan, index=df.index)),
-        errors="coerce",
-    ).isna().astype(float)
+    feats["f_tender_value_missing"] = tender_val.isna().astype(float)
 
     # 11. Is Q4 (October-December)
     pub_date = _parse_dates(df.get("tender_datePublished"))
@@ -201,10 +138,7 @@ def tier1_features(df: pd.DataFrame) -> pd.DataFrame:
     feats["f_is_december"] = (pub_date.dt.month == 12).astype(float)
 
     # 13. Award value missingness flag
-    feats["f_award_value_missing"] = pd.to_numeric(
-        df.get("award_value_amount", pd.Series(np.nan, index=df.index)),
-        errors="coerce",
-    ).isna().astype(float)
+    feats["f_award_value_missing"] = award_val.isna().astype(float)
 
     # 14. Title token count
     feats["f_title_token_count"] = _safe_token_count(df.get("tender_title"))
@@ -235,9 +169,8 @@ def tier2_features(df: pd.DataFrame) -> pd.DataFrame:
     # Sort by date for expanding-window correctness
     date_col = "tender_datePublished"
     dates = _parse_dates(df.get(date_col))
-    # Use raw numeric (without fillna) so NaN checks work in expanding windows
-    tender_val = pd.to_numeric(df.get("tender_value_amount"), errors="coerce")
-    award_val = pd.to_numeric(df.get("award_value_amount"), errors="coerce")
+    tender_val = _to_numeric(df.get("tender_value_amount"))
+    award_val = _to_numeric(df.get("award_value_amount"))
     buyer_id = df.get("buyer_id", pd.Series("", index=df.index)).fillna("")
     supplier_id = df.get("supplier_id", pd.Series("", index=df.index)).fillna("")
 

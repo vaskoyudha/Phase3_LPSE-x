@@ -17,10 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.artifacts import PROJECT_ROOT
-
-# Processed directory for metadata files
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+from src.data import PROJECT_ROOT, PROCESSED_DIR
 
 logger = logging.getLogger(__name__)
 

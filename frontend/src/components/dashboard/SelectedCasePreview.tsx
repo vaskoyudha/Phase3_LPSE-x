@@ -2,7 +2,6 @@ import type { CSSProperties, ReactNode } from 'react';
 import { ArrowDown, ArrowSquareOut, ArrowUp, Briefcase, Gauge, Hash, MapPinArea, Scales, Sparkle, SpinnerGap, Users } from '@phosphor-icons/react';
 import type { CasebookPayload, QueueItem } from '../../types/api';
 import { glassCreamIcon, glassCreamSurface } from '../shared/glassStyles';
-import { RiskChip } from '../shared/RiskChip';
 import { ScoreRing } from '../shared/ScoreRing';
 import { regionCenterByKey } from './regionGeometry';
 
@@ -69,8 +68,6 @@ export function SelectedCasePreview({ id, item, casebook, loadingFactors = false
         <div style={scoreTextStyle}>
           <p style={{ color: 'var(--lp-text-soft)', margin: 0, display: 'inline-flex', alignItems: 'center', gap: 7 }}><Gauge size={16} color="#D7D1B0" weight="fill" /> Risk score</p>
           <strong style={scorePercentStyle}>{scorePercent}%</strong>
-          <RiskChip label={item.predicted_label} />
-          <small style={{ color: 'var(--lp-muted)', lineHeight: 1.25 }}>Probability {item.probability.toLocaleString('id-ID', { maximumFractionDigits: 2 })}</small>
         </div>
       </div>
 
@@ -193,10 +190,7 @@ const scorePanelStyle: CSSProperties = {
   gap: 12,
   alignItems: 'center',
   minWidth: 0,
-  padding: 10,
-  border: '1px solid rgba(255,255,255,.075)',
-  borderRadius: 18,
-  background: 'rgba(255,255,255,.035)',
+  padding: '2px 0',
 };
 
 const scoreTextStyle: CSSProperties = {

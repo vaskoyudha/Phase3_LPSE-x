@@ -41,7 +41,6 @@ export function RiskDistributionChart({ queue, archiveCounts }: { queue: QueueRe
     <section className="card risk-distribution-card" aria-label="Distribusi Risiko" style={{ padding: 14, minHeight: 274, position: 'relative', overflow: 'hidden', minWidth: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 6 }}>
         <h3 style={{ margin: 0, lineHeight: 1.05, letterSpacing: '-.025em' }}>Distribusi<br />Risiko</h3>
-        {archiveCounts && <span style={sourceBadge}>database terfilter</span>}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: `minmax(128px, ${DONUT_SIZE}px) minmax(136px, ${LEGEND_CARD_MAX_WIDTH}px)`, justifyContent: 'space-between', gap: 8, alignItems: 'center', minWidth: 0 }}>
         <div ref={chartRef} style={{ height: DONUT_SIZE, position: 'relative', minWidth: 0 }}>
@@ -125,18 +124,4 @@ const centerCaption: CSSProperties = {
   lineHeight: 1,
   letterSpacing: '.02em',
   textTransform: 'uppercase',
-};
-
-const sourceBadge: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  borderRadius: 999,
-  padding: '.28rem .55rem',
-  color: 'var(--lp-bg-deep)',
-  background: 'var(--lp-cream)',
-  fontSize: 10.5,
-  fontWeight: 900,
-  letterSpacing: '.02em',
-  textTransform: 'lowercase',
-  whiteSpace: 'nowrap',
 };
