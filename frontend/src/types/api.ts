@@ -415,3 +415,30 @@ export interface CasebookExplanationBrief {
   shap_note: string;
   safety_note: string;
 }
+
+export interface CasebookPayload {
+  generated_at: string;
+  case_id: string;
+  metadata: Record<string, string | number | null>;
+  model_output: {
+    predicted_label: string;
+    probability: number;
+    probabilities: number[];
+    risk_rank: number | null;
+    risk_priority_score: number | null;
+  };
+  factors: Array<{
+    feature: string;
+    feature_label: string;
+    value: number;
+    shap_value: number;
+    direction: string;
+  }>;
+  narrative: string;
+  explanation_brief?: CasebookExplanationBrief;
+  reviewer_questions: string[];
+  guardrail: string;
+  heuristic_label_note: string;
+  guardrail_badges: string[];
+  provenance: Record<string, string>;
+}
