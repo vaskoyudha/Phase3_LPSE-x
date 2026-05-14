@@ -1,7 +1,20 @@
-import type { ArchiveBrowserResponse, DemoState, InferenceStatus, QueueResponse } from '../types/api';
+import type { ArchiveBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewRecord, ReviewUpdateRequest } from '../types/api';
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+
+async function putJson<T>(url: string, payload: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}`);
   }
