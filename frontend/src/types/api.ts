@@ -318,3 +318,29 @@ export interface ArchiveCoverageProof {
   no_live_scraping: boolean;
   no_retraining: boolean;
 }
+
+export interface ArchiveDonutSegment {
+  label: string;
+  filter_value: string;
+  count: number;
+  percent: number;
+  color: string;
+}
+
+export interface ArchiveAnalyticsResponse {
+  filters: ArchiveAnalyticsFilters;
+  counts: ArchiveAnalyticsCounts;
+  priority_map: ArchivePriorityPoint[];
+  priority_map_meta: ArchivePriorityMapMeta;
+  regional_concentration: ArchiveConcentrationItem[];
+  regional_meta: ArchiveConcentrationMeta;
+  region_map: ArchiveRegionMapItem[];
+  region_map_meta: ArchiveRegionMapMeta;
+  buyer_concentration: ArchiveConcentrationItem[];
+  buyer_meta: ArchiveConcentrationMeta;
+  coverage_proof: ArchiveCoverageProof;
+  monthly_trends: ArchiveMonthlyRiskTrend[];
+  donut: ArchiveDonutSegment[];
+  display_note: string;
+  guardrail: string;
+}
