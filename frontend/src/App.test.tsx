@@ -553,3 +553,47 @@ test('Dashboard floating nav owns Archive and Analytics dashboard subpages', asy
   }
 });
 
+test('Review Desk is an app-level saved review worklist', async () => {
+  const { fetchMock } = renderAppAt('/reviews');
+
+  expect(await screen.findByRole('heading', { name: 'Review Desk' })).toBeInTheDocument();
+  expect(screen.getByText('Hybrid human sign-off')).toBeInTheDocument();
+  expect(screen.getAllByText('Perlu Review').length).toBeGreaterThan(0);
+  expect(await screen.findByText(queueItem.package_title)).toBeInTheDocument();
+  expect(screen.getByText('Draft from casebook')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Open review drawer/i })).toHaveAttribute('href', `/casebook/${encodeURIComponent(queueItem.case_id)}?review=1`);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Open sidebar' }));
+  expect(within(screen.getByRole('navigation', { name: 'App sidebar navigation' })).getByRole('link', { name: 'Review Desk' })).toHaveAttribute('href', '/reviews');
+  fetchMock.mockRestore();
+});
+
+test('Casebook review drawer loads a draft and saves human sign-off', async () => {
+  const savedReview = { ...reviewRecord, status: 'Ditandai Risiko', reviewer_name: 'Vasco Yudha', is_saved: true, signed_off_at: '2026-05-13T00:00:00+00:00', event_count: 1 };
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    const url = String(input);
+    if (url.startsWith('/api/demo-state')) return jsonResponse(demoState);
+    if (url.startsWith('/api/queue')) return jsonResponse(queueResponse);
+    if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
+    if (url.startsWith('/api/archive')) return jsonResponse(datasetResponse);
+    if (url.startsWith('/api/reviews/') && init?.method === 'PUT') return jsonResponse(savedReview);
+    if (url.startsWith('/api/reviews/')) return jsonResponse(reviewRecord);
+    if (url.startsWith('/api/casebook/')) return jsonResponse(casebook);
+    throw new Error(`Unexpected fetch ${url}`);
+  });
+  window.history.pushState(null, '', `/casebook/${encodeURIComponent(queueItem.case_id)}?review=1`);
+  render(<App />);
+
+  expect(await screen.findByRole('region', { name: 'Package review drawer' })).toBeInTheDocument();
+  expect(screen.getByText('AI/model prefill')).toBeInTheDocument();
+  fireEvent.change(await screen.findByLabelText('Reviewer name'), { target: { value: 'Vasco Yudha' } });
+  fireEvent.change(screen.getByLabelText('Review status'), { target: { value: 'Ditandai Risiko' } });
+  fireEvent.change(screen.getByLabelText('Reviewer notes'), { target: { value: 'Dokumen perlu diverifikasi.' } });
+  fireEvent.click(screen.getByRole('checkbox', { name: /Sign off review/i }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save review' }));
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(`/api/reviews/${encodeURIComponent(queueItem.case_id)}`, expect.objectContaining({ method: 'PUT' })));
+  expect(await screen.findByText(/Saved as Ditandai Risiko/i)).toBeInTheDocument();
+  fetchMock.mockRestore();
+});
+
