@@ -1,4 +1,4 @@
-import type { ArchiveBrowserResponse, DatasetBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewRecord, ReviewUpdateRequest } from '../types/api';
+import type { ArchiveAnalyticsResponse, ArchiveBrowserResponse, DatasetBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewRecord, ReviewUpdateRequest } from '../types/api';
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -35,5 +35,9 @@ export const api = {
   archive: (params: URLSearchParams = new URLSearchParams()) => {
     const query = params.toString();
     return getJson<ArchiveBrowserResponse>(`/api/archive${query ? `?${query}` : ''}`);
+  },
+  archiveAnalytics: (params: URLSearchParams = new URLSearchParams()) => {
+    const query = params.toString();
+    return getJson<ArchiveAnalyticsResponse>(`/api/archive/analytics${query ? `?${query}` : ''}`);
   },
 };
