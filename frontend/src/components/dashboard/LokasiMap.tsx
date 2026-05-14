@@ -359,7 +359,6 @@ export function LokasiMap({ analytics, selectedRegionKey, loading = false, onSel
                 <Metric label="Average score" value={detailMetric.averageRiskScore.toLocaleString('id-ID', { maximumFractionDigits: 3 })} />
                 <Metric label="Archive share" value={`${detailMetric.percent.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`} />
               </dl>
-              <p>{detailMetric.note ?? 'Derived from buyer name text only.'}</p>
             </>
           ) : (
             <p>Klik wilayah berwarna untuk menerapkan filter `region_key`. Klik area kosong pada peta untuk menghapus filter.</p>
@@ -411,6 +410,114 @@ function _parseNusantaraMapPaths(): NusantaraMapPath[] {
 
 const NUSANTARA_PATHS = _parseNusantaraMapPaths();
 
+/**
+ * Native SVG-space center for each region path. The Nusantara SVG is a stylized
+ * illustration whose path coordinates do NOT follow Mercator projection, so we
+ * cannot project geo lon/lat onto this SVG. Instead, walk every path's `d`
+ * attribute and keep the bounding-box center in SVG units. Bubbles then sit
+ * exactly on the corresponding kabupaten/kota shape.
+ */
+const SVG_REGION_CENTERS = (() => {
+  const centers = new Map<string, [number, number]>();
+  NUSANTARA_PATHS.forEach((path) => {
+    const bbox = computeSvgPathBBox(path.d);
+    if (!bbox) return;
+    const cx = (bbox.minX + bbox.maxX) / 2;
+    const cy = (bbox.minY + bbox.maxY) / 2;
+    centers.set(path.regionKey, [cx, cy]);
+  });
+  return centers;
+})();
+
+type SvgPathBBox = { minX: number; minY: number; maxX: number; maxY: number };
+
+function computeSvgPathBBox(d: string): SvgPathBBox | null {
+  // Lightweight bbox extractor: tokenizes the `d` attribute, walks commands
+  // honouring relative vs absolute pairs, and tracks min/max for every
+  // resolved coordinate. Sufficient for the Nusantara SVG which uses plain
+  // M/m/L/l/H/h/V/v/C/c/S/s/Q/q/T/t/A/a/Z commands.
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let cx = 0, cy = 0;
+  let startX = 0, startY = 0;
+  const tokens = d.match(/[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?/g);
+  if (!tokens) return null;
+  let i = 0;
+  let cmd = '';
+  const num = (): number => Number.parseFloat(tokens[i++]);
+  const isCommand = (t: string) => /^[MmLlHhVvCcSsQqTtAaZz]$/.test(t);
+  const update = (x: number, y: number) => {
+    if (Number.isFinite(x) && Number.isFinite(y)) {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  };
+  while (i < tokens.length) {
+    if (isCommand(tokens[i])) {
+      cmd = tokens[i++];
+      if (cmd === 'M' || cmd === 'm') {
+        const x = num(), y = num();
+        if (cmd === 'M') { cx = x; cy = y; } else { cx += x; cy += y; }
+        startX = cx; startY = cy;
+        update(cx, cy);
+        // Subsequent pairs after M/m act as L/l
+        cmd = cmd === 'M' ? 'L' : 'l';
+        continue;
+      }
+      if (cmd === 'Z' || cmd === 'z') { cx = startX; cy = startY; continue; }
+    }
+    switch (cmd) {
+      case 'L': cx = num(); cy = num(); update(cx, cy); break;
+      case 'l': cx += num(); cy += num(); update(cx, cy); break;
+      case 'H': cx = num(); update(cx, cy); break;
+      case 'h': cx += num(); update(cx, cy); break;
+      case 'V': cy = num(); update(cx, cy); break;
+      case 'v': cy += num(); update(cx, cy); break;
+      case 'C': {
+        const x1 = num(), y1 = num(), x2 = num(), y2 = num(), x = num(), y = num();
+        update(x1, y1); update(x2, y2); update(x, y);
+        cx = x; cy = y; break;
+      }
+      case 'c': {
+        const x1 = cx + num(), y1 = cy + num();
+        const x2 = cx + num(), y2 = cy + num();
+        const x  = cx + num(), y  = cy + num();
+        update(x1, y1); update(x2, y2); update(x, y);
+        cx = x; cy = y; break;
+      }
+      case 'S': case 'Q': {
+        const x1 = num(), y1 = num(), x = num(), y = num();
+        update(x1, y1); update(x, y); cx = x; cy = y; break;
+      }
+      case 's': case 'q': {
+        const x1 = cx + num(), y1 = cy + num();
+        const x  = cx + num(), y  = cy + num();
+        update(x1, y1); update(x, y); cx = x; cy = y; break;
+      }
+      case 'T': { const x = num(), y = num(); update(x, y); cx = x; cy = y; break; }
+      case 't': { const x = cx + num(), y = cy + num(); update(x, y); cx = x; cy = y; break; }
+      case 'A': {
+        // rx ry x-axis-rotation large-arc-flag sweep-flag x y
+        num(); num(); num(); num(); num();
+        const x = num(), y = num();
+        update(x, y); cx = x; cy = y; break;
+      }
+      case 'a': {
+        num(); num(); num(); num(); num();
+        const x = cx + num(), y = cy + num();
+        update(x, y); cx = x; cy = y; break;
+      }
+      default:
+        // Unknown command — skip remaining number tokens until next command
+        if (i < tokens.length && !isCommand(tokens[i])) i++;
+        break;
+    }
+  }
+  if (!Number.isFinite(minX)) return null;
+  return { minX, minY, maxX, maxY };
+}
+
 const _indonesiaBoundsFeature = {
   type: 'Feature' as const,
   properties: {},
@@ -434,6 +541,95 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
   selectedRegionKey: string;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+
+  // ─── Zoom & pan state (SVG viewBox transform, no library) ────────────────
+  const INITIAL_VIEW = useMemo(
+    () => ({ x: 0, y: 0, w: NUSANTARA_W, h: NUSANTARA_H }),
+    [],
+  );
+  const [view, setView] = useState(INITIAL_VIEW);
+  const dragRef = useRef<{ startX: number; startY: number; viewX: number; viewY: number } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+
+  const MIN_ZOOM = 1;        // 1x = full Indonesia in view (initial)
+  const MAX_ZOOM = 12;       // 12x = ~kabupaten level
+  const currentZoom = NUSANTARA_W / view.w;
+
+  /** Convert client (px) coords to SVG-user coords using the current viewBox. */
+  const clientToSvg = (clientX: number, clientY: number): [number, number] => {
+    const svg = svgRef.current;
+    if (!svg) return [0, 0];
+    const rect = svg.getBoundingClientRect();
+    const px = (clientX - rect.left) / rect.width;
+    const py = (clientY - rect.top) / rect.height;
+    return [view.x + px * view.w, view.y + py * view.h];
+  };
+
+  /** Apply a multiplicative zoom centered on a given client position. */
+  const applyZoom = (factor: number, clientX?: number, clientY?: number) => {
+    setView((prev) => {
+      const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, (NUSANTARA_W / prev.w) * factor));
+      const nextW = NUSANTARA_W / nextZoom;
+      const nextH = NUSANTARA_H / nextZoom;
+      // Default focal point = center of current view
+      const svg = svgRef.current;
+      let focalX = prev.x + prev.w / 2;
+      let focalY = prev.y + prev.h / 2;
+      if (svg && clientX !== undefined && clientY !== undefined) {
+        const rect = svg.getBoundingClientRect();
+        const px = (clientX - rect.left) / rect.width;
+        const py = (clientY - rect.top) / rect.height;
+        focalX = prev.x + px * prev.w;
+        focalY = prev.y + py * prev.h;
+      }
+      // Keep focal point fixed on screen
+      const px = (focalX - prev.x) / prev.w;
+      const py = (focalY - prev.y) / prev.h;
+      let nextX = focalX - px * nextW;
+      let nextY = focalY - py * nextH;
+      // Clamp pan so the view never escapes the original frame
+      nextX = Math.max(0, Math.min(NUSANTARA_W - nextW, nextX));
+      nextY = Math.max(0, Math.min(NUSANTARA_H - nextH, nextY));
+      return { x: nextX, y: nextY, w: nextW, h: nextH };
+    });
+  };
+
+  const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.18 : 1 / 1.18;
+    applyZoom(factor, event.clientX, event.clientY);
+  };
+
+  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (event.button !== 0) return;
+    dragRef.current = { startX: event.clientX, startY: event.clientY, viewX: view.x, viewY: view.y };
+    setIsPanning(true);
+  };
+
+  const handleMouseMoveSvg = (event: React.MouseEvent<SVGSVGElement>) => {
+    const drag = dragRef.current;
+    if (!drag || !svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const dx = ((event.clientX - drag.startX) / rect.width) * view.w;
+    const dy = ((event.clientY - drag.startY) / rect.height) * view.h;
+    setView((prev) => ({
+      ...prev,
+      x: Math.max(0, Math.min(NUSANTARA_W - prev.w, drag.viewX - dx)),
+      y: Math.max(0, Math.min(NUSANTARA_H - prev.h, drag.viewY - dy)),
+    }));
+  };
+
+  const stopPan = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    setIsPanning(false);
+  };
+
+  const resetView = () => setView(INITIAL_VIEW);
+
+  // Click is suppressed if user just panned more than a few pixels.
+  const clickGuardRef = useRef<{ x: number; y: number } | null>(null);
+  // ────────────────────────────────────────────────────────────────────────
 
   // Event delegation: single handler on SVG container instead of 518 × 6 handlers
   const handlePointerEvent = (event: React.MouseEvent<SVGSVGElement> | React.FocusEvent<SVGSVGElement> | React.KeyboardEvent<SVGSVGElement>) => {
@@ -459,7 +655,12 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
       case 'focusout':
         onHover(null);
         break;
-      case 'click':
+      case 'click': {
+        // Suppress click that resulted from a pan gesture.
+        const start = clickGuardRef.current;
+        const me = event as React.MouseEvent;
+        clickGuardRef.current = null;
+        if (start && Math.hypot(me.clientX - start.x, me.clientY - start.y) > 4) break;
         if (!regionKey) {
           onHover(null);
           if (selectedRegionKey) onSelectRegion('');
@@ -469,6 +670,7 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
           else { onHover(null); if (selectedRegionKey) onSelectRegion(''); }
         }
         break;
+      }
       case 'keydown': {
         const ke = event as React.KeyboardEvent;
         if (regionKey && (ke.key === 'Enter' || ke.key === ' ')) {
@@ -481,19 +683,32 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
     }
   };
 
+  // Avoid TS unused warning — keep helper exposed for future drag-to-zoom use.
+  void clientToSvg;
+
   return (
-    <svg
-      ref={svgRef}
-      viewBox={NUSANTARA_VIEWBOX}
-      role="img"
-      aria-label="Local Indonesia kabupaten kota SVG backup map"
-      onMouseOver={handlePointerEvent}
-      onMouseOut={handlePointerEvent}
-      onFocusCapture={handlePointerEvent}
-      onBlurCapture={handlePointerEvent}
-      onClick={handlePointerEvent}
-      onKeyDown={handlePointerEvent}
-    >
+    <div className="lokasi-map__svg-wrap">
+      <svg
+        ref={svgRef}
+        viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
+        role="img"
+        aria-label="Local Indonesia kabupaten kota SVG backup map"
+        style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+        onWheel={handleWheel}
+        onMouseDown={(event) => {
+          clickGuardRef.current = { x: event.clientX, y: event.clientY };
+          handleMouseDown(event);
+        }}
+        onMouseMove={handleMouseMoveSvg}
+        onMouseUp={stopPan}
+        onMouseLeave={stopPan}
+        onMouseOver={handlePointerEvent}
+        onMouseOut={handlePointerEvent}
+        onFocusCapture={handlePointerEvent}
+        onBlurCapture={handlePointerEvent}
+        onClick={handlePointerEvent}
+        onKeyDown={handlePointerEvent}
+      >
       <rect className="lokasi-map__background" width={NUSANTARA_W} height={NUSANTARA_H} fill="#f7f4e7" />
       {NUSANTARA_PATHS.map((path) => {
         const key = resolveMetricKey(path.regionKey, metricByKey);
@@ -522,8 +737,10 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
       })}
       <g className="lokasi-map__bubbles" aria-label="Dataset distribution bubbles">
         {distributionData.features.map((point) => {
-          const [x, y] = projectionPoint(point.geometry.coordinates);
           const key = point.properties.map_key;
+          const svgCenter = resolveSvgCenter(key);
+          if (!svgCenter) return null;
+          const [x, y] = svgCenter;
           return (
             <circle
               key={`bubble-${key}`}
@@ -544,6 +761,30 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
         })}
       </g>
     </svg>
+      <div className="lokasi-map__zoom" role="group" aria-label="Zoom map">
+        <button
+          type="button"
+          className="lokasi-map__zoom-btn"
+          aria-label="Zoom in"
+          disabled={currentZoom >= MAX_ZOOM - 1e-3}
+          onClick={() => applyZoom(1.4)}
+        >+</button>
+        <button
+          type="button"
+          className="lokasi-map__zoom-btn"
+          aria-label="Zoom out"
+          disabled={currentZoom <= MIN_ZOOM + 1e-3}
+          onClick={() => applyZoom(1 / 1.4)}
+        >−</button>
+        <button
+          type="button"
+          className="lokasi-map__zoom-btn lokasi-map__zoom-reset"
+          aria-label="Reset zoom"
+          disabled={currentZoom <= MIN_ZOOM + 1e-3}
+          onClick={resetView}
+        >⤺</button>
+      </div>
+    </div>
   );
 }
 
@@ -845,6 +1086,32 @@ function resolveMetricKey(regionKey: string, metricByKey: Map<string, RegionMetr
   return regionKey;
 }
 
+/**
+ * Look up a region center in SVG coordinates. Analytics keys are like
+ * "kabupaten-katingan" / "kota-medan", but SVG_REGION_CENTERS is keyed by the
+ * SVG path's normalized region key (without prefix). Try a sequence of
+ * fallbacks so every analytics row that has a matching SVG path gets a bubble.
+ */
+function resolveSvgCenter(analyticsKey: string): [number, number] | null {
+  const direct = SVG_REGION_CENTERS.get(analyticsKey);
+  if (direct) return direct;
+  const stripped = analyticsKey.replace(/^(kabupaten|kota|administrasi|kab)-/, '');
+  if (stripped !== analyticsKey) {
+    const hit = SVG_REGION_CENTERS.get(stripped);
+    if (hit) return hit;
+  }
+  // Try slug variant (replace spaces, drop non-alphanumeric)
+  const slug = stripped
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+  if (slug && slug !== stripped) {
+    const hit = SVG_REGION_CENTERS.get(slug);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 function projectionPoint(coordinates: [number, number]) {
   return svgProjection(coordinates) ?? [0, 0];
 }
@@ -855,8 +1122,11 @@ function bubbleRadius(count: number, maxCount: number, focused: boolean) {
 }
 
 function bubbleColor(highRiskPercent: number, averageRiskScore: number) {
-  if (highRiskPercent >= 35 || averageRiskScore >= 0.72) return '#E05A4F';
-  if (highRiskPercent >= 16 || averageRiskScore >= 0.48) return '#D8A42F';
+  // Lowered thresholds so the choropleth bubble layer actually shows the
+  // tail of the distribution. The dataset average sits around 6% high-risk,
+  // so the previous 35%/16% thresholds rendered every bubble green.
+  if (highRiskPercent >= 18 || averageRiskScore >= 0.55) return '#E05A4F';
+  if (highRiskPercent >= 8 || averageRiskScore >= 0.32) return '#D8A42F';
   return '#4FA66A';
 }
 
