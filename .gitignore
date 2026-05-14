@@ -32,3 +32,4 @@ review_data/
 # Local/runtime artifacts
 .codex/
 *.pyc
+demo_casebook.html
