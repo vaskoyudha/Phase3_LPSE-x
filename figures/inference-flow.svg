@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="920" viewBox="0 0 1760 920">
+<rect width="100%" height="100%" fill="#F7F8FC"/>
+<rect x="24" y="24" width="1712" height="872" rx="28" fill="#FFFFFF" stroke="#D7DCEA" stroke-width="2"/>
+<text x="56" y="68" fill="#0F172A" font-size="30" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif">Alur Inference dan Explainability</text>
+<text x="56" y="102" fill="#64748B" font-size="15" font-family="DejaVu Sans, Arial, sans-serif">Satu baris pengadaan diubah menjadi skor risiko, faktor SHAP, dan narasi Bahasa Indonesia yang actionable.</text>
+<rect x="1552.28125" y="46" width="149.71875" height="28" rx="14" fill="#DCFCE7"/>
+<text x="1566.28125" y="64" fill="#0F172A" font-size="13" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif">Human-readable</text>
+<rect x="1437.484375" y="46" width="104.796875" height="28" rx="14" fill="#E0F2FE"/>
+<text x="1451.484375" y="64" fill="#0F172A" font-size="13" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif">CPU-ready</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" /></marker></defs>
+<path d="M 310.0 350.0 L 335.0 350.0 L 335.0 350.0 L 360.0 350.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M 580.0 350.0 L 610.0 350.0 L 610.0 350.0 L 640.0 350.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M 765.0 290.0 L 765.0 290.0 L 1085.0 290.0 L 1085.0 290.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M 765.0 410.0 L 765.0 420.0 L 1085.0 420.0 L 1085.0 430.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M 890.0 350.0 L 1075.0 350.0 L 1075.0 350.0 L 1260.0 350.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M 1085.0 290.0 L 1085.0 360.0 L 1085.0 360.0 L 1085.0 430.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)" stroke-dasharray="10 7"/>
+<path d="M 1210.0 490.0 L 1375.0 490.0 L 1375.0 350.0 L 1540.0 350.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M 1490.0 350.0 L 1515.0 350.0 L 1515.0 350.0 L 1540.0 350.0" fill="none" stroke="#475569" stroke-width="4" marker-end="url(#arrow)"/>
+<rect x="94" y="296" width="220" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="90" y="290" width="220" height="120" rx="22" fill="#E0F2FE" stroke="#94A3B8" stroke-width="3"/>
+<text x="200.0" y="345.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="200.0" dy="0">Input procurement</tspan><tspan x="200.0" dy="19.8">row</tspan></text>
+<rect x="364" y="296" width="220" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="360" y="290" width="220" height="120" rx="22" fill="#EDE9FE" stroke="#94A3B8" stroke-width="3"/>
+<text x="470.0" y="345.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="470.0" dy="0">Feature vector siap</tspan><tspan x="470.0" dy="19.8">model</tspan></text>
+<rect x="644" y="296" width="250" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="640" y="290" width="250" height="120" rx="22" fill="#FEF3C7" stroke="#94A3B8" stroke-width="3"/>
+<text x="765.0" y="345.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="765.0" dy="0">Probabilitas risiko per</tspan><tspan x="765.0" dy="19.8">kelas</tspan></text>
+<rect x="964" y="176" width="250" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="960" y="170" width="250" height="120" rx="22" fill="#DCFCE7" stroke="#94A3B8" stroke-width="3"/>
+<text x="1085.0" y="236.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="1085.0" dy="0">Top SHAP factors</tspan></text>
+<rect x="964" y="436" width="250" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="960" y="430" width="250" height="120" rx="22" fill="#DCFCE7" stroke="#94A3B8" stroke-width="3"/>
+<text x="1085.0" y="496.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="1085.0" dy="0">Narasi Bahasa Indonesia</tspan></text>
+<rect x="1264" y="296" width="230" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="1260" y="290" width="230" height="120" rx="22" fill="#FCE7F3" stroke="#94A3B8" stroke-width="3"/>
+<text x="1375.0" y="345.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="1375.0" dy="0">Thresholding</tspan><tspan x="1375.0" dy="19.8">operasional</tspan></text>
+<rect x="1544" y="296" width="170" height="120" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="1540" y="290" width="170" height="120" rx="22" fill="#FCE7F3" stroke="#94A3B8" stroke-width="3"/>
+<text x="1625.0" y="345.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="1625.0" dy="0">Risk lane &amp;</tspan><tspan x="1625.0" dy="19.8">reviewer action</tspan></text>
+<rect x="324" y="656" width="1150" height="130" rx="22" fill="#D7DCEA" opacity="0.35"/>
+<rect x="320" y="650" width="1150" height="130" rx="22" fill="#F7F8FC" stroke="#CBD5E1" stroke-width="2"/>
+<text x="895.0" y="721.0" fill="#0F172A" font-size="15" font-weight="700" font-family="DejaVu Sans, Arial, sans-serif" text-anchor="middle"><tspan x="895.0" dy="0">Output final per record: skor risiko, tiga faktor utama, narasi singkat, dan rekomendasi eskalasi manual bila perlu.</tspan></text>
+<text x="56" y="864" fill="#64748B" font-size="13" font-family="DejaVu Sans, Arial, sans-serif">LPSE-X | Find IT! 2026 Track C | Generated offline</text>
+</svg>

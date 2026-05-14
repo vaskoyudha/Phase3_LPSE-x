@@ -1,0 +1,63 @@
+flowchart TB
+
+  classDef phase fill:#F8F5EC,stroke:#334155,stroke-width:1.6px,color:#0F172A;
+  classDef gate fill:#0F766E,stroke:#134E4A,stroke-width:1.6px,color:#FFFFFF;
+  classDef proposal fill:#FEF3C7,stroke:#B45309,stroke-width:1.4px,color:#78350F;
+  classDef note fill:#E0F2FE,stroke:#0369A1,stroke-width:1.2px,color:#0C4A6E;
+
+  subgraph P01["Phase 0-1 | Foundation, Proposal Kickoff, and Data Reality Check"]
+    direction TB
+    A["T1-T3\nScaffold project\nSmoke-test repo\nKick off Bab 1 + Bab 4"]:::phase
+    B["T4-T6\nDownload OCDS\nRun field-coverage audit\nSplit raw data into train/test"]:::phase
+  end
+
+  G0["Gate 0\nFoundation Ready"]:::gate
+
+  subgraph P2["Phase 2 | Labels, Features, and Leakage Control"]
+    direction TB
+    C["T7-T10\nWeak labels\nTier 1 + Tier 2 features\nMaterialize train/test artifacts"]:::phase
+    D["T11\nLeakage guard\nC-C4 verification"]:::phase
+  end
+
+  G1["Gate 1\nData Freeze + Leakage Safe"]:::gate
+
+  subgraph P3["Phase 3 | Modeling and Calibration"]
+    direction TB
+    E["T12-T16\nDraft Bab 2 from real data\nRun HPO on train-only dev splits\nReview calibration subset\nLock metrics.json"]:::phase
+  end
+
+  G2["Gate 2\nModel Baseline Locked"]:::gate
+
+  subgraph P4["Phase 4 | Explainability and Inference Stack"]
+    direction TB
+    F["T17-T21\nDraft Bab 3 from evidence\nTreeSHAP explanations\nONNX parity\nNarrative output\nCounterfactual path"]:::phase
+  end
+
+  G3["Gate 3\nXAI Stack Complete"]:::gate
+
+  subgraph P5["Phase 5 | Notebooks and Proposal Integration"]
+    direction TB
+    H["T22-T26\nAssemble training.ipynb\nAssemble inference.ipynb\nSync proposal with metrics + figures\nGenerate final PDF"]:::phase
+  end
+
+  G4["Gate 4\nNotebooks + Proposal Ready"]:::gate
+
+  subgraph P6["Phase 6 | Reproducibility and Submission"]
+    direction TB
+    I["T27-T28\nClean-environment verification\nSubmission package\nFinal checklist"]:::phase
+  end
+
+  G5["Gate 5\nSubmission Ready"]:::gate
+
+  J["Proposal lane\nBab 1 starts immediately\nBab 2 waits for real data\nBab 3 waits for implementation evidence\nBab 4 absorbs final metrics and figures"]:::proposal
+
+  K["Control rules\nNo HPO on test_data\nNo calibration on test_data\nIf bid fields are sparse: keep bid-derived features nullable\nIf DiCE is slow: ship SHAP fallback"]:::note
+
+  A --> G0 --> B --> C --> D --> G1 --> E --> G2 --> F --> G3 --> H --> G4 --> I --> G5
+  A -.-> J
+  B -.-> J
+  E -.-> J
+  F -.-> J
+  B -.-> K
+  E -.-> K
+  F -.-> K
