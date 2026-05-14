@@ -260,3 +260,43 @@ export interface ArchiveConcentrationMeta {
   sort: string;
   note: string;
 }
+
+export interface ArchiveRegionMapItem {
+  region_key: string;
+  map_key: string | null;
+  label: string;
+  province: string | null;
+  region_type: 'kabupaten' | 'kota' | 'provinsi' | 'unknown' | string;
+  status?: 'matched' | 'unmatched' | 'unsupported_level' | string;
+  geo_match_status?: 'matched' | 'unmatched' | 'unsupported_level' | string;
+  count: number;
+  percent: number;
+  high_risk_count: number;
+  high_risk_percent: number;
+  total_contract_value: number;
+  average_risk_score: number;
+  region_source: string | null;
+  region_note: string | null;
+  filter_value: string;
+}
+
+export interface ArchiveRegionMapMeta {
+  asset_path?: string;
+  attribution_path?: string;
+  source_url?: string;
+  source_commit?: string;
+  license?: string;
+  feature_count?: number;
+  matched_count: number;
+  regions_returned?: number;
+  mapped_regions?: number;
+  matched_regions: number;
+  unmatched_regions: number;
+  unsupported_regions?: number;
+  unsupported_level_regions?: number;
+  source_note?: string;
+  geojson_source?: string;
+  geojson_license?: string;
+  map_granularity?: 'kabupaten_kota';
+  note: string;
+}
