@@ -57,3 +57,20 @@ export interface ArchiveInferenceStatus {
   display_note: string;
   guardrail: string;
 }
+
+export interface DemoState {
+  ready: boolean;
+  offline_mode: boolean;
+  demo_case_id: string | null;
+  demo_queue_url: string;
+  casebook_url: string | null;
+  export_html_url: string | null;
+  model_artifact: string | null;
+  feature_source: string | null;
+  raw_source: string | null;
+  inference_status: InferenceStatus | null;
+  guardrail: string;
+  golden_path_steps: string[];
+  production_build_status: ProductionBuildStatus;
+  error?: string | null;
+}
