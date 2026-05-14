@@ -12,3 +12,15 @@
   --lp-amber: #d8a42f;
   --lp-red: #e05a4f;
 }
+
+:root {
+  --lp-font: 'Space Grotesk', Inter, ui-sans-serif, system-ui, sans-serif;
+  --lp-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --lp-heading-tracking: -0.04em;
+  --lp-body-line: 1.65;
+}
+
+body {
+  font-family: var(--lp-font);
+  line-height: var(--lp-body-line);
+}
