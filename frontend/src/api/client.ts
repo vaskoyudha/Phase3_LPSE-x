@@ -1,4 +1,4 @@
-import type { ArchiveAnalyticsResponse, ArchiveBrowserResponse, DatasetBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewListResponse, ReviewRecord, ReviewUpdateRequest } from '../types/api';
+import type { ArchiveAnalyticsResponse, ArchiveBrowserResponse, CasebookPayload, DatasetBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewListResponse, ReviewRecord, ReviewUpdateRequest } from '../types/api';
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -46,4 +46,5 @@ export const api = {
   },
   review: (caseId: string) => getJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`),
   saveReview: (caseId: string, payload: ReviewUpdateRequest) => putJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`, payload),
+  casebook: (caseId: string) => getJson<CasebookPayload>(`/api/casebook/${encodeURIComponent(caseId)}`),
 };
