@@ -190,10 +190,7 @@ const scorePanelStyle: CSSProperties = {
   gap: 12,
   alignItems: 'center',
   minWidth: 0,
-  padding: 10,
-  border: '1px solid rgba(255,255,255,.075)',
-  borderRadius: 18,
-  background: 'rgba(255,255,255,.035)',
+  padding: '2px 0',
 };
 
 const scoreTextStyle: CSSProperties = {

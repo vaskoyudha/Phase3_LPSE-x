@@ -964,13 +964,10 @@ a:active {
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  padding: 4px;
-  border-radius: 18px;
-  background: radial-gradient(120% 140% at 50% 0%, rgba(255, 255, 255, 0.05), rgba(17, 16, 15, 0.92) 70%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 18px 32px color-mix(in srgb, var(--score-ring-color), transparent 84%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .score-ring__chart {
   width: 100%;
