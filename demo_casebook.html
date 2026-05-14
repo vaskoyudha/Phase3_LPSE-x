@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LPSE-X Casebook Report</title>
+<style>
+:root { --bg:#0B1323; --panel:#07111f; --card:#111A2E; --line:rgba(96,165,250,.32); --cyan:#22D3EE; --blue:#38BDF8; --green:#10B981; --amber:#F59E0B; --red:#EF4444; --muted:#9CA3AF; --text:#FFFFFF; }
+* { box-sizing:border-box; }
+body { margin:0; background:radial-gradient(circle at 18% 0%, rgba(34,211,238,.18), transparent 34%), radial-gradient(circle at 82% 20%, rgba(59,130,246,.13), transparent 28%), var(--bg); color:var(--text); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+body::before { content:""; position:fixed; inset:0; pointer-events:none; background-image:linear-gradient(rgba(148,163,184,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.035) 1px, transparent 1px); background-size:32px 32px; mask-image:linear-gradient(to bottom, black, transparent 82%); }
+.report { width:min(1040px, calc(100% - 28px)); margin:16px auto; padding:18px; border:1px solid var(--line); border-radius:12px; background:linear-gradient(180deg, rgba(7,17,31,.94), rgba(7,17,31,.86)); box-shadow:0 24px 80px rgba(0,0,0,.42); }
+.header { display:grid; grid-template-columns:1fr 440px; gap:20px; align-items:start; padding:2px 2px 20px; border-bottom:1px solid rgba(148,163,184,.28); }
+.brand { display:flex; gap:18px; align-items:flex-start; }
+.logo { width:74px; height:74px; border-radius:22px; background:linear-gradient(135deg, rgba(34,211,238,.95), rgba(37,99,235,.86)); display:grid; place-items:center; font-weight:900; font-size:24px; letter-spacing:-.04em; box-shadow:0 0 42px rgba(34,211,238,.28); }
+h1 { margin:0; font-size:34px; line-height:1.06; letter-spacing:-.04em; }
+.subtitle { margin:8px 0 12px; color:#BFDBFE; font-size:18px; }
+.header-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.kv, .data-source, .section, .safety, .footer-card { background:linear-gradient(180deg, rgba(17,26,46,.9), rgba(8,20,36,.88)); border:1px solid var(--line); border-radius:10px; box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+.kv { padding:12px 14px; min-height:78px; }
+.kv span, .label { display:block; color:#CBD5E1; font-size:12px; letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px; }
+.data-source { grid-column:1 / -1; padding:11px 14px; border-color:rgba(16,185,129,.5); color:#BBF7D0; text-align:right; }
+.badge { display:inline-block; margin:5px 6px 0 0; padding:7px 10px; border-radius:999px; color:#CFFAFE; border:1px solid rgba(34,211,238,.42); background:rgba(34,211,238,.09); font-size:12px; font-weight:700; }
+.section { margin-top:16px; overflow:hidden; }
+.section-title { display:flex; align-items:center; gap:10px; padding:13px 16px; border-bottom:1px solid rgba(148,163,184,.24); color:#DBEAFE; font-weight:800; letter-spacing:.02em; text-transform:uppercase; }
+.section-title .icon { width:24px; height:24px; border:1px solid rgba(56,189,248,.7); color:#7DD3FC; border-radius:6px; display:grid; place-items:center; font-size:13px; }
+.meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 22px; padding:16px; }
+.meta-row { display:grid; grid-template-columns:170px 1fr; gap:18px; padding:12px 0; border-bottom:1px solid rgba(148,163,184,.16); }
+.meta-row:nth-last-child(-n+2) { border-bottom:0; }
+.meta-row span { color:#CBD5E1; }
+.assessment { display:grid; grid-template-columns:330px 1fr 280px; gap:0; align-items:center; }
+.assessment > div { padding:24px; min-height:168px; border-right:1px solid rgba(148,163,184,.24); }
+.assessment > div:last-child { border-right:0; }
+.risk-lockup { display:flex; gap:22px; align-items:center; }
+.shield { width:92px; height:108px; display:grid; place-items:center; color:#fff; font-size:56px; font-weight:900; background:linear-gradient(145deg, #EF4444, rgba(127,29,29,.86)); clip-path:polygon(50% 0, 92% 15%, 86% 72%, 50% 100%, 14% 72%, 8% 15%); box-shadow:0 0 38px #EF444466; }
+.risk-title { color:#EF4444; font-size:31px; font-weight:900; letter-spacing:-.04em; }
+.risk-subtitle { color:#FECACA; margin-top:4px; font-size:19px; }
+.probability-value { color:#EF4444; font-size:42px; font-weight:900; margin:8px 0; }
+.meter { position:relative; height:13px; border-radius:999px; background:linear-gradient(90deg, var(--green), #A3E635, var(--amber), #F97316, var(--red)); box-shadow:0 0 22px rgba(245,158,11,.16); }
+.meter::after { content:""; position:absolute; top:50%; left:100.00%; transform:translate(-50%,-50%); width:18px; height:18px; border-radius:999px; background:#fff; box-shadow:0 0 16px rgba(255,255,255,.65); }
+.meter-scale { display:flex; justify-content:space-between; color:#CBD5E1; font-size:12px; margin-top:8px; }
+.priority { color:#EF4444; font-size:32px; font-weight:900; margin-top:8px; }
+p, li { color:#D1D5DB; line-height:1.58; }
+table { width:100%; border-collapse:collapse; }
+th, td { padding:11px 14px; border-bottom:1px solid rgba(148,163,184,.16); text-align:left; vertical-align:middle; }
+th { color:#E5E7EB; font-size:12px; text-transform:uppercase; background:rgba(34,211,238,.07); }
+td span { color:var(--muted); font-size:12px; }
+.rank-badge { width:32px; height:32px; border-radius:999px; display:grid; place-items:center; font-weight:900; color:white !important; background:linear-gradient(135deg, #EF4444, rgba(245,158,11,.85)); border:1px solid rgba(255,255,255,.28); }
+.risk-up { color:#F87171; } .risk-down { color:#2DD4BF; }
+.signed-bar { position:relative; height:18px; margin-bottom:6px; background:rgba(148,163,184,.10); border-radius:999px; overflow:hidden; }
+.signed-bar .axis { position:absolute; top:0; bottom:0; left:50%; width:1px; background:rgba(226,232,240,.62); }
+.signed-bar .fill { position:absolute; top:3px; bottom:3px; border-radius:999px; }
+.signed-bar.risk-up .fill { left:50%; background:linear-gradient(90deg, #F59E0B, #EF4444); }
+.signed-bar.risk-down .fill { right:50%; background:linear-gradient(90deg, #14B8A6, #22D3EE); }
+code { color:#E5E7EB; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+.narrative-grid { display:grid; grid-template-columns:1fr 1.06fr; gap:14px; padding:14px; }
+.narrative-card { padding:14px; border:1px solid rgba(148,163,184,.2); border-radius:10px; background:rgba(8,20,36,.68); }
+ol { list-style:none; margin:0; padding:0; }
+ol li { display:grid; grid-template-columns:22px 1fr; gap:10px; padding:9px 0; border-bottom:1px dashed rgba(148,163,184,.2); }
+ol li:last-child { border-bottom:0; }
+ol li span { width:18px; height:18px; border:1px solid rgba(148,163,184,.7); border-radius:4px; margin-top:3px; }
+.safety { margin-top:16px; padding:18px 24px; border-color:rgba(239,68,68,.72); background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(245,158,11,.07)),rgba(17,26,46,.94); display:grid; grid-template-columns:92px 1fr; gap:20px; align-items:center; }
+.warning { width:76px; height:76px; display:grid; place-items:center; border:5px solid var(--red); color:white; font-size:46px; font-weight:900; clip-path:polygon(50% 0, 100% 92%, 0 92%); padding-top:15px; }
+.safety strong { display:block; color:#FF4D4D; font-size:20px; letter-spacing:.02em; text-transform:uppercase; }
+.safety p { margin:6px 0 0; font-size:18px; color:#F8FAFC; font-weight:800; text-transform:uppercase; }
+.safety small { display:block; margin-top:8px; color:#FECACA; line-height:1.5; }
+.footer-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:16px; }
+.footer-card { padding:13px; min-height:86px; }
+.footer-card strong { display:block; color:#E0F2FE; font-size:13px; margin-bottom:6px; }
+.footer-card span { color:#CBD5E1; font-size:12px; line-height:1.45; }
+.footer { color:var(--muted); font-size:12px; display:flex; justify-content:space-between; margin-top:14px; padding:0 8px 2px; }
+@media (max-width:860px) { .header, .assessment, .meta-grid, .narrative-grid, .footer-grid { grid-template-columns:1fr; } .assessment > div { border-right:0; border-bottom:1px solid rgba(148,163,184,.24); } .assessment > div:last-child { border-bottom:0; } .meta-row { grid-template-columns:1fr; gap:4px; } }
+@media print { body { background:#0B1323; } body::before { display:none; } .report { width:100%; margin:0; box-shadow:none; } }
+</style>
+</head>
+<body>
+<main class="report">
+  <header class="header">
+    <div class="brand">
+      <div class="logo">LX</div>
+      <div>
+        <h1>LPSE-X Casebook Report</h1>
+        <div class="subtitle">Explainable Procurement Risk Triage</div>
+        <div><span class='badge'>Offline Inference</span><span class='badge'>No Live Scraping</span><span class='badge'>No Model Retraining</span><span class='badge'>Anti-Leakage Split Preserved</span><span class='badge'>Perlu Review Manusia</span></div>
+      </div>
+    </div>
+    <div class="header-grid">
+      <div class="kv"><span>Report Generated</span>06 May 2026 · 06:19 UTC</div>
+      <div class="kv"><span>Model Artifact</span>model_risk.ubj</div>
+      <div class="data-source"><strong>Data Source</strong> · Prepared local test data (raw.parquet / features.parquet)</div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-title"><span class="icon">1</span> Informasi Paket Pengadaan</div>
+    <div class="meta-grid">
+      <div class="meta-row"><span>Judul Paket</span><strong>PENGADAAN TAS SERBA GUNA WILAYAH BARAT PROGRAM APBN T.A. 2023</strong></div>
+      <div class="meta-row"><span>Nilai Tender (HPS)</span><strong>Rp197.804.500.154</strong></div>
+      <div class="meta-row"><span>Nama Buyer</span><strong>Kepolisian Negara Republik Indonesia</strong></div>
+      <div class="meta-row"><span>Metode Pengadaan</span><strong>Tidak tersedia</strong></div>
+      <div class="meta-row"><span>Nama Supplier</span><strong>PT. Makmur Sehati Sejahtera</strong></div>
+      <div class="meta-row"><span>OCID / Tender ID</span><strong>ocds-20h3g7-20651044 / 20651044</strong></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title"><span class="icon">2</span> Assessment Risiko</div>
+    <div class="assessment">
+      <div class="risk-lockup"><div class="shield">!</div><div><div class="risk-title">Risiko Tinggi</div><div class="risk-subtitle">Risk class</div></div></div>
+      <div><span class="label">Probabilitas (predicted risk)</span><div class="probability-value">100%</div><div class="meter"></div><div class="meter-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+      <div><span class="label">Review Priority</span><div class="priority">High</div><p>Prioritas review tinggi · Rank #1</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title"><span class="icon">3</span> Explainability — Top Risk Factors <span style="color:#9CA3AF;text-transform:none;font-weight:500">(Top 5 SHAP contribution)</span></div>
+    <table><thead><tr><th>Rank</th><th>Faktor Prioritas Review (Fitur)</th><th>Nilai</th><th>Dampak</th><th>Kontribusi (SHAP)</th></tr></thead><tbody>
+            <tr>
+              <td><span class="rank-badge">1</span></td>
+              <td><strong>Z-score nilai terhadap buyer</strong><br><span>f_tender_value_zscore_buyer</span></td>
+              <td>5.2171</td>
+              <td class="risk-up">Meningkatkan risiko</td>
+              <td><div class='signed-bar risk-up' aria-label='zero-axis signed contribution'><span class='axis'></span><span class='fill' style='width:48.0%;'></span></div><code>+4.50190</code></td>
+            </tr>
+            
+            <tr>
+              <td><span class="rank-badge">2</span></td>
+              <td><strong>Nilai tender</strong><br><span>f_tender_value_log</span></td>
+              <td>26.0105</td>
+              <td class="risk-up">Meningkatkan risiko</td>
+              <td><div class='signed-bar risk-up' aria-label='zero-axis signed contribution'><span class='axis'></span><span class='fill' style='width:42.0%;'></span></div><code>+3.93787</code></td>
+            </tr>
+            
+            <tr>
+              <td><span class="rank-badge">3</span></td>
+              <td><strong>Award supplier 90 hari</strong><br><span>f_supplier_recent_90d_award_count</span></td>
+              <td>4.0</td>
+              <td class="risk-up">Meningkatkan risiko</td>
+              <td><div class='signed-bar risk-up' aria-label='zero-axis signed contribution'><span class='axis'></span><span class='fill' style='width:39.5%;'></span></div><code>+3.70743</code></td>
+            </tr>
+            
+            <tr>
+              <td><span class="rank-badge">4</span></td>
+              <td><strong>Relasi buyer-supplier berulang</strong><br><span>f_buyer_supplier_repeat_count</span></td>
+              <td>9.0</td>
+              <td class="risk-up">Meningkatkan risiko</td>
+              <td><div class='signed-bar risk-up' aria-label='zero-axis signed contribution'><span class='axis'></span><span class='fill' style='width:34.3%;'></span></div><code>+3.22003</code></td>
+            </tr>
+            
+            <tr>
+              <td><span class="rank-badge">5</span></td>
+              <td><strong>Panjang judul</strong><br><span>f_title_length</span></td>
+              <td>61.0</td>
+              <td class="risk-down">Menurunkan risiko</td>
+              <td><div class='signed-bar risk-down' aria-label='zero-axis signed contribution'><span class='axis'></span><span class='fill' style='width:30.0%;'></span></div><code>-2.81257</code></td>
+            </tr>
+            </tbody></table>
+  </section>
+
+  <section class="narrative-grid">
+    <div class="section narrative-card">
+      <div class="section-title"><span class="icon">4</span> Narasi Penjelasan</div>
+      <div style="padding:0 14px 12px"><p>Peringkat prioritas review paket ini adalah **Risiko Tinggi**.<br>Diturunkan dari triase model: Risiko Tinggi dengan probabilitas 100.00%.<br>Model mengklasifikasikan paket ini sebagai **Risiko Tinggi** dengan probabilitas 100.00%.<br>Catatan penting: ini adalah triase risiko untuk prioritas review, bukan tuduhan pelanggaran atau putusan akhir. Prioritas review kritis hanya boleh digunakan bila ada referensi bukti resmi yang perlu diverifikasi.<br>Faktor yang paling memengaruhi prediksi adalah:<br>- F tender value zscore buyer bernilai 5.2171 dan meningkatkan prioritas review dengan kontribusi SHAP sekitar 4.5019.<br>- Nilai tender bernilai 26.0105 dan meningkatkan prioritas review dengan kontribusi SHAP sekitar 3.9379.<br>- F supplier recent 90d award count bernilai 4 dan meningkatkan prioritas review dengan kontribusi SHAP sekitar 3.7074.<br>- Frekuensi hubungan buyer-supplier berulang bernilai 9 dan meningkatkan prioritas review dengan kontribusi SHAP sekitar 3.2200.<br>- Panjang judul tender bernilai 61 dan menurunkan prioritas review dengan kontribusi SHAP sekitar 2.8126.</p></div>
+    </div>
+    <div class="section narrative-card">
+      <div class="section-title"><span class="icon">5</span> Reviewer Checklist <span style="color:#9CA3AF;text-transform:none;font-weight:500">(Human Review)</span></div>
+      <div style="padding:0 14px 12px"><ol><li><span></span>Apakah metode pengadaan, nilai paket, dan waktu publikasi konsisten dengan kebutuhan pekerjaan?</li><li><span></span>Apakah terdapat pola relasi buyer-supplier berulang yang perlu ditinjau dalam konteks historis?</li><li><span></span>Apakah dokumen tender cukup lengkap untuk menjelaskan spesifikasi, nilai, dan pemenang?</li><li><span></span>Apakah faktor model yang dominan memiliki penjelasan administratif yang wajar?</li><li><span></span>Bukti pendukung apa yang perlu diminta sebelum keputusan tindak lanjut dibuat?</li></ol></div>
+    </div>
+  </section>
+
+  <section class="safety">
+    <div class="warning">!</div>
+    <div><strong>Prioritas review, bukan tuduhan pelanggaran.</strong><p>Label risiko bersifat heuristik dan membutuhkan validasi manusia.</p><small>Output LPSE-X adalah triase risiko dan prioritas review; bukan tuduhan pelanggaran, bukan putusan akhir, dan wajib ditinjau manusia.<br>Label risiko bersifat heuristik dari data split lokal; bukan status pelanggaran yang terverifikasi.</small></div>
+  </section>
+
+  <section class="footer-grid"><div class='footer-card'><strong>Offline Inference</strong><span>Seluruh prediksi dilakukan secara lokal/offline.</span></div><div class='footer-card'><strong>No Live Scraping</strong><span>Tidak ada pengambilan data langsung dari internet.</span></div><div class='footer-card'><strong>No Model Retraining</strong><span>Tidak ada retraining, tuning, atau mutasi model.</span></div><div class='footer-card'><strong>Anti-Leakage Split Preserved</strong><span>Pemisahan train/test tetap dijaga.</span></div></section>
+  <div class="footer"><span>Dokumen ini dihasilkan otomatis oleh LPSE-X Explainable Casebook.</span><span>Untuk keperluan audit dan review internal.</span></div>
+</main>
+</body>
+</html>

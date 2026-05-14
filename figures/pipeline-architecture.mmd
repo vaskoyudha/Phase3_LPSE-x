@@ -1,0 +1,9 @@
+flowchart LR
+    A[Data OCDS mentah] --> B[Raw temporal split]
+    B --> C[Feature engineering split-aware]
+    C --> D[Weak labeling risiko]
+    D --> E[Training XGBoost + calibration]
+    E --> F[SHAP + narasi Bahasa Indonesia]
+    F --> G[Risk lane & audit triage]
+    H[Artefak output] --> G
+    H --> I[Notebook, model, proposal figures]

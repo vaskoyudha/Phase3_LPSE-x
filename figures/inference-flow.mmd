@@ -1,0 +1,8 @@
+flowchart LR
+    A[Input procurement row] --> B[Feature vector]
+    B --> C[Probabilitas risiko]
+    C --> D[Top SHAP factors]
+    D --> E[Narasi Bahasa Indonesia]
+    E --> F[Risk lane & reviewer action]
+    C --> G[Thresholding operasional]
+    G --> F

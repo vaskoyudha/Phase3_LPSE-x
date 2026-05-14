@@ -1,0 +1,9 @@
+flowchart TD
+    A[Raw OCDS rows] --> B[train_data/raw.parquet]
+    A --> C[test_data/raw.parquet]
+    B --> D[train-only fit / HPO / calibration]
+    D --> E[trained model + temperature scaling]
+    C --> F[held-out evaluation only]
+    E --> G[inference on test_data]
+    F --> G
+    G --> H[metrics + explainability evidence]
