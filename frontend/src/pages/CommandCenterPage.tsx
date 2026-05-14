@@ -40,6 +40,7 @@ const INFERENCE_PANEL_ID = 'dashboard-inference-panel';
 const SELECTED_CASE_PANEL_ID = 'dashboard-selected-case-panel';
 const RIGHT_RAIL_STICKY_TOP = 104;
 const RIGHT_RAIL_STICKY_BOTTOM = 0;
+const ARCHIVE_PAGE_SIZE = 100;
 const PROFILE_NAME = 'Vasco Yudha';
 const PROFILE_ROLE = 'LPSE-X Risk Analyst';
 export type DashboardTab = 'overview' | 'archive' | 'analytics' | 'locations' | 'activity';
@@ -257,7 +258,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
     let alive = true;
     const params = new URLSearchParams();
     params.set('page', String(datasetPage));
-    params.set('page_size', '10');
+    params.set('page_size', String(ARCHIVE_PAGE_SIZE));
     if (filters.risk && filters.risk !== 'all') params.set('risk', filters.risk);
     if (filters.search.trim()) params.set('search', filters.search.trim());
     if (filters.buyer) params.set('buyer', filters.buyer);
@@ -735,7 +736,7 @@ function ArchiveRailCards({ dataset, splitFilter, sort, selectedRegionKey }: { d
   const cards = [
     { label: 'Matched rows', value: formatNumber(dataset?.matched_count), note: 'sesuai filter aktif', Icon: CheckCircle, tone: 'var(--lp-emerald)' },
     { label: 'Total archive', value: formatNumber(dataset?.total_rows), note: dataset?.archive_scope ?? 'all local prepared data', Icon: Database, tone: 'var(--lp-cream)' },
-    { label: 'Rows per page', value: formatNumber(dataset?.page_size), note: 'tabel arsip tetap 10 baris', Icon: Stack, tone: 'var(--lp-cream)' },
+    { label: 'Rows per page', value: formatNumber(dataset?.page_size), note: 'kontrak arsip 100 baris', Icon: Stack, tone: 'var(--lp-cream)' },
     { label: 'Split view', value: splitFilter === 'all' ? 'Semua split' : splitFilter, note: sort === 'risk_desc' ? 'urut risiko tertinggi' : 'sort aktif', Icon: Funnel, tone: 'var(--lp-amber)' },
   ];
 

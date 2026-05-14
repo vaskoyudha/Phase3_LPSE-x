@@ -350,6 +350,7 @@ export function LokasiMap({ analytics, selectedRegionKey, loading = false, onSel
           </div>
         </div>
         <aside className="lokasi-map__detail" aria-live="polite">
+          <RegionMatchPanel regions={analytics?.region_map ?? []} />
           {detailMetric ? (
             <>
               <h3>{detailMetric.label}</h3>
@@ -550,6 +551,33 @@ function SvgRiskMap({ distributionData, hoverKey, maxCount, metricByKey, onHover
 function Metric({ label, value }: { label: string; value: string }) {
   return <><dt>{label}</dt><dd>{value}</dd></>;
 }
+
+function RegionMatchPanel({ regions }: { regions: ArchiveRegionMapItem[] }) {
+  const unsupported = regions.filter((region) => (region.geo_match_status ?? region.status) === 'unsupported_level');
+  const unmatched = regions.filter((region) => (region.geo_match_status ?? region.status) === 'unmatched');
+  if (unsupported.length === 0 && unmatched.length === 0) return null;
+  return (
+    <div className="lokasi-map__match-panel" aria-label="Region match coverage">
+      {unsupported.length > 0 && (
+        <section>
+          <strong>Unsupported levels</strong>
+          <ul>
+            {unsupported.map((region) => <li key={`unsupported-${region.region_key || region.label}`}>{region.label}</li>)}
+          </ul>
+        </section>
+      )}
+      {unmatched.length > 0 && (
+        <section>
+          <strong>Unmatched kab/kota</strong>
+          <ul>
+            {unmatched.map((region) => <li key={`unmatched-${region.region_key || region.label}`}>{region.label}</li>)}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
+}
+
 
 type MapInteractionRefs = {
   handlersBound: MutableRefObject<boolean>;
