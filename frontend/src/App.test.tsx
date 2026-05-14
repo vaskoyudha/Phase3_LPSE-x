@@ -745,3 +745,37 @@ test('Dashboard filter panel toggles from the topbar without old status pills', 
   fetchMock.mockRestore();
 });
 
+test('Unknown frontend route renders NotFound with real recovery routes', async () => {
+  const fetchMock = installAppFetchMock();
+  window.history.pushState(null, '', '/unknown-route');
+  render(<App />);
+  expect((await screen.findAllByText('Halaman tidak ditemukan')).length).toBeGreaterThan(0);
+  expect(screen.getAllByRole('link', { name: /Home/i }).some((link) => link.getAttribute('href') === '/home')).toBe(true);
+  expect(screen.getAllByRole('link', { name: /Dashboard/i }).some((link) => link.getAttribute('href') === '/dashboard/overview')).toBe(true);
+  fetchMock.mockRestore();
+});
+
+test('LandingPage renders reference-style CTAs and required safe copy', () => {
+  render(<LandingPage demoState={demoState} onOpen={() => undefined} />);
+  expect(screen.getByText('Open Command Center')).toBeInTheDocument();
+  expect(screen.getByText('View Casebook Demo')).toBeInTheDocument();
+  expect(screen.getByText(/SHAP Explainability/)).toBeInTheDocument();
+  expect(screen.getAllByText(/triase risiko/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/prioritas review/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/bukan tuduhan pelanggaran/).length).toBeGreaterThan(0);
+  expect(screen.getByText(/Human review guardrail: triase risiko · prioritas review · bukan tuduhan pelanggaran/i)).toBeInTheDocument();
+});
+
+test('FilterRail updates risk filters with compact controls only', () => {
+  let filters: Filters = { search: '', risk: 'all', topN: '50', buyer: '', supplier: '' };
+  const { rerender } = render(<FilterRail filters={filters} setFilters={(next) => { filters = next; }} reset={() => { filters = { search: '', risk: 'all', topN: '50', buyer: '', supplier: '' }; }} buyers={[queueItem.buyer]} suppliers={[queueItem.supplier]} resultCount={1} />);
+  fireEvent.click(screen.getByLabelText('Risiko Tinggi'));
+  rerender(<FilterRail filters={filters} setFilters={(next) => { filters = next; }} reset={() => undefined} buyers={[queueItem.buyer]} suppliers={[queueItem.supplier]} resultCount={1} />);
+  expect(filters.risk).toBe('Risiko Tinggi');
+  expect(screen.getByText('Filters')).toBeInTheDocument();
+  expect(screen.getByText('1 matched')).toBeInTheDocument();
+  expect(screen.queryByText(/Dataset scope/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/triase risiko/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/bukan tuduhan pelanggaran/)).not.toBeInTheDocument();
+});
+
