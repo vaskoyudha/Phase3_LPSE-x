@@ -344,3 +344,11 @@ export interface ArchiveAnalyticsResponse {
   display_note: string;
   guardrail: string;
 }
+
+export type ReviewStatus =
+  | 'Perlu Review'
+  | 'Sedang Direview'
+  | 'Butuh Bukti Tambahan'
+  | 'Ditandai Risiko'
+  | 'Clear / Tidak Prioritas'
+  | 'Selesai';
