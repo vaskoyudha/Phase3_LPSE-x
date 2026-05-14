@@ -167,7 +167,7 @@ function DriverCard({
       <strong style={styles.driverTitle}>{driver.title}</strong>
       <p style={styles.driverReason}>{driver.reason}</p>
       <div style={styles.driverCheck}>
-        <span style={styles.checkLabel}>Checklist</span>
+        <span style={styles.checkLabel}>Checklist:</span>
         <p style={styles.checkText}>{driver.reviewer_check}</p>
       </div>
       <dl style={styles.driverMeta}>

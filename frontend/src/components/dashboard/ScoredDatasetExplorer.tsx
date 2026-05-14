@@ -52,6 +52,9 @@ export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function Sco
         </div>
       </div>
 
+      <p className="safe-copy" style={styles.guardrail}>triase risiko · prioritas review · bukan tuduhan pelanggaran</p>
+      <p className="safe-copy" style={styles.guardrailNote}>Triase risiko untuk prioritas review; bukan tuduhan pelanggaran.</p>
+
       <div style={styles.heroRow} aria-label="Archive size summary">
         <span style={styles.heroNumber}>{totalRows ? fmt(totalRows) : '—'}</span>
         <span style={styles.heroUnit}>records</span>
@@ -163,15 +166,15 @@ export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function Sco
           Showing <strong>{firstVisible.toLocaleString('id-ID')}</strong>–<strong>{lastVisible.toLocaleString('id-ID')}</strong> of <strong>{matched.toLocaleString('id-ID')}</strong> rows
         </span>
         <div style={styles.paginationControls}>
-          <button type="button" disabled={loading || page <= 1} onClick={() => onPageChange(1)} style={styles.paginationBtn} aria-label="First page">{'«'}</button>
-          <button type="button" disabled={loading || page <= 1} onClick={() => onPageChange(Math.max(1, page - 1))} style={styles.paginationBtn} aria-label="Previous page">{'‹'}</button>
+          <button type="button" disabled={loading || page <= 1} onClick={() => onPageChange(1)} style={styles.paginationBtn} aria-label="First archive page">{'«'}</button>
+          <button type="button" disabled={loading || page <= 1} onClick={() => onPageChange(Math.max(1, page - 1))} style={styles.paginationBtn} aria-label="Previous archive page">{'‹'}</button>
           {paginationRange(page, totalPages).map((p, i) => (
             p === '...' ? <span key={`ellipsis-${i}`} style={styles.paginationEllipsis}>…</span> : (
               <button key={p} type="button" onClick={() => onPageChange(p as number)} style={{ ...styles.paginationBtn, ...(p === page ? styles.paginationBtnActive : undefined) }}>{p}</button>
             )
           ))}
-          <button type="button" disabled={loading || page >= totalPages} onClick={() => onPageChange(Math.min(totalPages, page + 1))} style={styles.paginationBtn} aria-label="Next page">{'›'}</button>
-          <button type="button" disabled={loading || page >= totalPages} onClick={() => onPageChange(totalPages)} style={styles.paginationBtn} aria-label="Last page">{'»'}</button>
+          <button type="button" disabled={loading || page >= totalPages} onClick={() => onPageChange(Math.min(totalPages, page + 1))} style={styles.paginationBtn} aria-label="Next archive page">{'›'}</button>
+          <button type="button" disabled={loading || page >= totalPages} onClick={() => onPageChange(totalPages)} style={styles.paginationBtn} aria-label="Last archive page">{'»'}</button>
         </div>
       </div>
     </section>
@@ -291,7 +294,8 @@ const styles: Record<string, CSSProperties> = {
   detailNote: { gridColumn: '1 / -1', margin: 0, color: 'var(--lp-text-soft)' },
   footer: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', color: 'var(--lp-text-soft)', fontSize: 11 },
   safeChip: { display: 'inline-flex', alignItems: 'center', gap: 6, lineHeight: 1.3 },
-  guardrail: { color: 'var(--lp-bg-deep)', margin: 0 },
+  guardrail: { color: 'var(--lp-bg-deep)', margin: 0, justifySelf: 'start', borderRadius: 999, padding: '.42rem .68rem', background: 'var(--lp-cream)', fontSize: 12, fontWeight: 860 },
+  guardrailNote: { margin: 0, color: 'var(--lp-text-soft)', fontSize: 12.5, fontWeight: 720 },
   emptyState: { padding: 18, textAlign: 'center', color: 'var(--lp-muted)', borderBottom: '1px solid rgba(255,255,255,.06)' },
   paginationBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 0 4px' },
   paginationInfo: { fontSize: 12, color: 'var(--lp-muted)' },

@@ -3,7 +3,7 @@ import { CheckCircle, ShieldCheck, WarningCircle, type Icon as PhosphorIcon } fr
 import { glassCreamSurface } from '../shared/glassStyles';
 import type { QueueItem } from '../../types/api';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 25;
 
 const riskTone: Record<string, { color: string; background: string; Icon: PhosphorIcon }> = {
   'Risiko Tinggi': { color: '#E05A4F', background: 'rgba(224,90,79,.16)', Icon: WarningCircle },
@@ -73,7 +73,7 @@ export function RiskQueueTable({ items, selectedId, onSelect }: { items: QueueIt
         </table>
       </div>
       <p style={footer}>
-        Menampilkan {items.length === 0 ? '0' : `${firstIndex + 1}–${firstIndex + pageItems.length}`} dari {items.length.toLocaleString('id-ID')} paket antrean lokal — fokus cockpit tetap 10 baris per halaman untuk prioritas review.
+        Menampilkan {items.length === 0 ? '0' : `${firstIndex + 1}–${firstIndex + pageItems.length}`} dari {items.length.toLocaleString('id-ID')} paket antrean lokal — fokus cockpit tetap 25 baris per halaman untuk prioritas review.
       </p>
     </section>
   );
