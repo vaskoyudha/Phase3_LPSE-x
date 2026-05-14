@@ -961,3 +961,43 @@ test('LokasiMap renders open-source map copy, SVG backup paths, unsupported pane
 });
 
 
+test('LokasiMap clears selected region from empty SVG map areas', () => {
+  const selectRegion = vi.fn();
+  const { container } = render(<LokasiMap analytics={archiveAnalyticsResponse} selectedRegionKey="kota-bandung" onSelectRegion={selectRegion} />);
+  const background = container.querySelector<SVGRectElement>('svg .lokasi-map__background');
+  const emptyRegion = Array.from(container.querySelectorAll<SVGPathElement>('svg path[data-region-key]')).find((path) => path.dataset.regionKey !== 'kota-bandung');
+
+  expect(background).not.toBeNull();
+  expect(emptyRegion).toBeDefined();
+  fireEvent.click(background!);
+  fireEvent.click(emptyRegion!);
+
+  expect(selectRegion).toHaveBeenCalledWith('');
+  expect(selectRegion).toHaveBeenCalledTimes(2);
+});
+
+test('Lokasi dashboard click adds region_key to archive and analytics requests', async () => {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
+    if (url.startsWith('/api/archive')) return jsonResponse(datasetResponse);
+    if (url.startsWith('/api/casebook/')) return jsonResponse(casebook);
+    throw new Error(`Unexpected fetch ${url}`);
+  });
+
+  const { container } = render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="locations" onSelect={() => undefined} onOpenCasebook={() => undefined} />);
+  await screen.findByText('Open-source Indonesia risk map');
+  const bandungPath = container.querySelector<SVGPathElement>('svg path[data-region-key="kota-bandung"]');
+  expect(bandungPath).not.toBeNull();
+  fireEvent.click(bandungPath!);
+
+  await waitFor(() => expect(fetchMock.mock.calls.some(([input]) => {
+    const url = String(input);
+    return url.startsWith('/api/archive?') && new URLSearchParams(url.split('?')[1]).get('region_key') === 'kota-bandung';
+  })).toBe(true));
+  expect(fetchMock.mock.calls.some(([input]) => {
+    const url = String(input);
+    return url.startsWith('/api/archive/analytics?') && new URLSearchParams(url.split('?')[1]).get('region_key') === 'kota-bandung';
+  })).toBe(true);
+}, 15000);
+
