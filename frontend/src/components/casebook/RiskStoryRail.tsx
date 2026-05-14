@@ -21,7 +21,6 @@ export function RiskStoryRail({ casebook }: { casebook: CasebookPayload }) {
             <span style={styles.confidenceBadge}>{brief.confidence_label}</span>
             <p style={styles.narrative}>{brief.summary}</p>
             <p style={styles.briefNote}>{brief.model_interpretation}</p>
-            <p style={styles.shapNote}>{brief.shap_note}</p>
           </div>
         ) : (
           <p style={styles.narrative}>{narrative}</p>
@@ -79,7 +78,6 @@ export function RiskSignalsToVerify({ casebook }: { casebook: CasebookPayload })
       <div style={styles.signalExplanation}>
         <p style={styles.narrative}>{brief.summary}</p>
         <p style={styles.briefNote}>{brief.model_interpretation}</p>
-        <p style={styles.shapNote}>{brief.shap_note}</p>
       </div>
       <div className={`signal-flow-stack signal-flow-stack--count-${Math.min(signals.length, 5)}`} style={styles.signalFlowStack}>
         {signals.map(({ driver, tone }, index) => (
@@ -177,7 +175,6 @@ const styles: Record<string, CSSProperties> = {
     ...glassCreamIcon,
   },
   briefNote: { color: 'var(--lp-muted)', lineHeight: 1.5, margin: 0 },
-  shapNote: { color: '#d9c89f', lineHeight: 1.5, margin: 0, paddingTop: 10, borderTop: '1px solid var(--lp-line)' },
   shapExplainerCard: { padding: 16, display: 'grid', gap: 6, borderColor: 'rgba(215,209,176,.24)', background: 'rgba(215,209,176,.08)' },
   shapExplainer: { color: 'var(--lp-text-soft)', lineHeight: 1.5, margin: 0 },
   signalFlowPanel: {
