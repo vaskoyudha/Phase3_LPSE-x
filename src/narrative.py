@@ -20,16 +20,16 @@ BUSINESS_RATING_ID = {
 FEATURE_LABELS = {
     "f_single_bidder": "indikasi peserta tunggal",
     "f_num_tenderers": "jumlah peserta tender",
-    "f_price_deviation_ratio": "rasio deviasi harga terhadap nilai tender",
+    "f_price_deviation_ratio": "deviasi harga terhadap estimasi",
     "f_procurement_method_enc": "metode pengadaan",
     "f_is_q4": "waktu publikasi pada kuartal IV",
     "f_is_december": "publikasi pada bulan Desember",
-    "f_tender_value_log": "nilai tender",
+    "f_tender_value_log": "nilai tender relatif besar",
     "f_award_value_log": "nilai pemenang",
     "f_contract_value_log": "nilai kontrak",
     "f_title_length": "panjang judul tender",
     "f_description_length": "kelengkapan deskripsi tender",
-    "f_buyer_supplier_repeat_count": "frekuensi hubungan buyer-supplier berulang",
+    "f_buyer_supplier_repeat_count": "riwayat buyer-supplier berulang",
     "f_tender_value_zscore_buyer": "nilai tender dibanding pola historis buyer",
     "f_supplier_recent_90d_award_count": "aktivitas award supplier dalam 90 hari terakhir",
     "f_buyer_recent_30d_tender_count": "aktivitas tender buyer dalam 30 hari terakhir",
@@ -59,7 +59,7 @@ FEATURE_REVIEW_GUIDANCE = {
     ),
     "f_price_deviation_ratio": (
         "Deviasi harga perlu konteks",
-        "Rasio harga berbeda dari nilai acuan yang dipakai fitur model.",
+        "Deviasi harga berbeda dari estimasi/HPS yang dipakai sebagai acuan.",
         "Bandingkan nilai penawaran, HPS, pagu, dan dokumen evaluasi harga.",
     ),
     "f_is_q4": (
@@ -213,9 +213,6 @@ def derive_business_rating(
             watchlist_records.append(record)
 
     if critical_records:
-        critical_families = sorted(
-            {_normalize_text(record.get("label_family")) for record in critical_records if record.get("label_family")}
-        )
         sources = sorted(
             {_normalize_text(record.get("source_name")) for record in critical_records if record.get("source_name")}
         )
@@ -224,8 +221,8 @@ def derive_business_rating(
             "rating_label": BUSINESS_RATING_ID["risiko_kritis"],
             "rating_source": "official_evidence",
             "rating_reason": (
-                "Diprioritaskan untuk review kritis karena ada referensi bukti resmi yang perlu diverifikasi "
-                f"({', '.join(critical_families)}) dari sumber {', '.join(sources) or 'resmi'}."
+                "Diprioritaskan untuk review kritis karena ada referensi evidence resmi yang perlu diverifikasi "
+                f"oleh reviewer dari sumber {', '.join(sources) or 'resmi'}."
             ),
         }
 
@@ -384,13 +381,10 @@ def render_explanation_narrative(
         f"{brief['confidence_label']} untuk kelas **{label}**; probabilitas digunakan sebagai skor triase, bukan kepastian hukum.",
     ]
 
-    if business_rating["rating_source"] != "official_evidence":
+    lines.append(SAFETY_NOTE)
+    if business_rating["rating_source"] == "official_evidence":
         lines.append(
-            SAFETY_NOTE
-        )
-    else:
-        lines.append(
-            "Catatan penting: prioritas review kritis didukung referensi bukti resmi, tetapi kecocokan entitas dan konteks kasus tetap harus diverifikasi reviewer; ini bukan tuduhan pelanggaran atau putusan akhir."
+            "Catatan tambahan: ada referensi evidence resmi yang membantu triase risiko, tetapi kecocokan entitas dan konteks kasus tetap harus diverifikasi reviewer."
         )
 
     if factors:
