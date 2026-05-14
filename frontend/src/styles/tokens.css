@@ -2020,3 +2020,22 @@ body:has(.landing-shell)::before,
 body:has(.landing-shell)::after {
   opacity: 0;
 }
+
+
+/* Auth layout: keep preface tightly centered and stack on narrow viewports. */
+.auth-shell__preface {
+  text-align: center;
+}
+.auth-shell__preface > * {
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 980px) {
+  .auth-shell__body {
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: stretch !important;
+  }
+  .auth-shell__preface {
+    max-width: 540px !important;
+  }
+}
