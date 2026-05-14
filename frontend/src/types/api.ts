@@ -383,3 +383,11 @@ export interface ReviewListResponse {
   items: ReviewRecord[];
   guardrail: string;
 }
+
+export interface ReviewUpdateRequest {
+  status: ReviewStatus;
+  reviewer_name: string;
+  notes: string;
+  decision_summary: string;
+  signed_off: boolean;
+}
