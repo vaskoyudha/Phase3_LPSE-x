@@ -909,10 +909,34 @@ test('CommandCenterPage requests archive pages at the 100-row contract size with
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&sort=risk_desc'));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive/analytics?sort=risk_desc'));
   const analyticsCallsBefore = fetchMock.mock.calls.filter(([input]) => String(input).startsWith('/api/archive/analytics')).length;
-  fireEvent.click(screen.getByLabelText('Next archive page'));
+  fireEvent.click(screen.getByLabelText('Next page'));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=100&sort=risk_desc'));
   const analyticsCallsAfter = fetchMock.mock.calls.filter(([input]) => String(input).startsWith('/api/archive/analytics')).length;
   expect(analyticsCallsAfter).toBe(analyticsCallsBefore);
+  fetchMock.mockRestore();
+});
+
+test('Archive table search filters archive requests and resets pagination', async () => {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+    const url = String(input);
+    if (url.startsWith('/api/archive/analytics')) return Promise.resolve(new Response(JSON.stringify(archiveAnalyticsResponse), { status: 200 }));
+    if (url.startsWith('/api/archive')) return Promise.resolve(new Response(JSON.stringify(datasetResponse), { status: 200 }));
+    if (url.startsWith('/api/casebook/')) return Promise.resolve(new Response(JSON.stringify(casebook), { status: 200 }));
+    return Promise.resolve(new Response('{}', { status: 200 }));
+  });
+
+  render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="archive" onSelect={() => undefined} onOpenCasebook={() => undefined} />);
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&sort=risk_desc'));
+  fireEvent.click(screen.getByLabelText('Next page'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=2&page_size=100&sort=risk_desc'));
+
+  fireEvent.click(screen.getByText('Held-out'));
+  fireEvent.change(screen.getByLabelText('Archive sort'), { target: { value: 'value_desc' } });
+  fireEvent.change(screen.getByLabelText('Search archive table'), { target: { value: 'Lingkar' } });
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=1&page_size=100&search=Lingkar&split=test_data&sort=value_desc'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive/analytics?search=Lingkar&split=test_data&sort=value_desc'));
   fetchMock.mockRestore();
 });
 

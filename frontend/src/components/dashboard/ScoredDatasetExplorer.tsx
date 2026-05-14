@@ -1,5 +1,5 @@
 import { forwardRef, type CSSProperties, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search } from 'lucide-react';
 import type { ArchiveBrowserResponse, ArchiveRow } from '../../types/api';
 import { glassControlSurface, glassCreamSurface } from '../shared/glassStyles';
 
@@ -17,14 +17,15 @@ type Props = {
   selectedId?: string;
   splitFilter?: string;
   sort?: string;
-  previewRow?: ArchiveRow | null;
+  searchValue?: string;
   onSplitChange?: (split: string) => void;
   onSortChange?: (sort: string) => void;
+  onSearchChange?: (search: string) => void;
   onSelect: (row: ArchiveRow) => void;
   onPageChange: (page: number) => void;
 };
 
-export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function ScoredDatasetExplorer({ dataset, loading = false, error = null, selectedId, splitFilter = 'all', sort = 'risk_desc', previewRow = null, onSplitChange, onSortChange, onSelect, onPageChange }, ref) {
+export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function ScoredDatasetExplorer({ dataset, loading = false, error = null, selectedId, splitFilter = 'all', sort = 'risk_desc', searchValue = '', onSplitChange, onSortChange, onSearchChange, onSelect, onPageChange }, ref) {
   const rows = dataset?.items ?? [];
   const totalRows = dataset?.total_rows ?? 0;
   const matched = dataset?.matched_count ?? 0;
@@ -36,7 +37,6 @@ export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function Sco
   const firstVisible = rows.length ? (page - 1) * (dataset?.page_size ?? rows.length) + 1 : 0;
   const lastVisible = rows.length ? firstVisible + rows.length - 1 : 0;
   const isFiltered = matched > 0 && totalRows > 0 && matched !== totalRows;
-  const selectedRow = rows.find((row) => row.case_id === selectedId) ?? (previewRow?.case_id === selectedId ? previewRow : null) ?? rows[0];
   const fmt = (n: number) => n.toLocaleString('id-ID');
 
   return (
@@ -72,6 +72,19 @@ export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function Sco
       )}
 
       <div style={styles.controls}>
+        <label style={styles.searchLabel}>
+          <span style={styles.searchLabelText}>Search archive table</span>
+          <span style={styles.searchShell}>
+            <Search size={14} aria-hidden="true" style={styles.searchIcon} />
+            <input
+              aria-label="Search archive table"
+              value={searchValue}
+              onChange={(event) => { onPageChange(1); onSearchChange?.(event.target.value); }}
+              placeholder="Package, ID, buyer, supplier..."
+              style={styles.searchInput}
+            />
+          </span>
+        </label>
         <div role="radiogroup" aria-label="Archive split filter" style={styles.splitGroup}>
           {[
             ['all', 'All'],
@@ -178,25 +191,12 @@ export const ScoredDatasetExplorer = forwardRef<HTMLElement, Props>(function Sco
   );
 });
 
-function Detail({ label, value }: { label: string; value: string }) {
-  return <span style={styles.detailItem}><small>{label}</small><strong>{value}</strong></span>;
-}
-
 function Header({ children }: { children: string }) {
   return <th style={styles.th}>{children}</th>;
 }
 
 function Cell({ children, strong = false }: { children: ReactNode; strong?: boolean }) {
   return <td style={{ ...styles.td, fontWeight: strong ? 900 : 650 }}>{children}</td>;
-}
-
-function ProbabilityBar({ value = 0 }: { value?: number }) {
-  const bounded = Math.max(0, Math.min(1, value));
-  return <span style={styles.probWrap}><span style={{ ...styles.probBar, width: `${Math.round(bounded * 100)}%` }} /><strong>{pct(value)}</strong></span>;
-}
-
-function SplitChip({ row }: { row: ArchiveRow }) {
-  return <span style={{ ...styles.splitChip, ...(row.is_heldout ? styles.heldoutChip : styles.trainChip) }}>{row.is_heldout ? 'Held-out' : 'Train'}</span>;
 }
 
 function buyerRegion(row: ArchiveRow) {
@@ -215,10 +215,6 @@ function buyerRegion(row: ArchiveRow) {
 
 function cleanText(value?: string | null) {
   return typeof value === 'string' ? value.trim() : '';
-}
-
-function pct(value?: number) {
-  return `${Math.round((value ?? 0) * 100)}%`;
 }
 
 function paginationRange(current: number, total: number): (number | '...')[] {
@@ -262,6 +258,11 @@ const styles: Record<string, CSSProperties> = {
   matchedNote: { margin: 0, color: 'var(--lp-text-soft)', fontSize: 12, fontWeight: 600, padding: '8px 12px', borderRadius: 999, background: 'rgba(215,209,176,.08)', border: '1px solid rgba(215,209,176,.18)', alignSelf: 'start', justifySelf: 'start' },
   matchedNoteStrong: { color: 'var(--lp-text)', fontWeight: 800 },
   controls: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' },
+  searchLabel: { display: 'grid', gap: 5, flex: '1 1 280px', minWidth: 220, maxWidth: 440, color: 'var(--lp-muted)', fontSize: 11, fontWeight: 760 },
+  searchLabelText: { textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--lp-muted)' },
+  searchShell: { minHeight: 38, display: 'flex', alignItems: 'center', gap: 7, borderRadius: 999, padding: '0 .72rem', ...glassControlSurface },
+  searchIcon: { color: 'var(--lp-muted)', flex: '0 0 auto' },
+  searchInput: { width: '100%', minWidth: 0, border: 0, outline: 0, color: 'var(--lp-text)', background: 'transparent', fontSize: 12.5, fontWeight: 700 },
   splitGroup: { display: 'inline-flex', padding: 4, gap: 2, borderRadius: 999, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)' },
   splitOption: { borderRadius: 999, padding: '.42rem .9rem', color: 'var(--lp-text-soft)', fontWeight: 700, fontSize: 12.5, background: 'transparent', border: '1px solid transparent', cursor: 'pointer', transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease' },
   splitOptionActive: { color: 'var(--lp-bg-deep)', ...glassCreamSurface },
@@ -278,20 +279,6 @@ const styles: Record<string, CSSProperties> = {
   oneLine: { display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--lp-text)', maxWidth: '100%' },
   subLine: { display: 'block', marginTop: 3, color: 'var(--lp-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   riskPill: { display: 'inline-flex', justifyContent: 'center', minWidth: 84, border: '1px solid', borderRadius: 999, padding: '.28rem .46rem', fontWeight: 760, fontSize: 10.5 },
-  probWrap: { position: 'relative', display: 'block', height: 20, minWidth: 78, borderRadius: 999, overflow: 'hidden', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(215,209,176,.16)' },
-  probBar: { position: 'absolute', inset: '0 auto 0 0', background: 'var(--lp-cream)' },
-  splitChip: { display: 'inline-flex', border: '1px solid', borderRadius: 999, padding: '.25rem .5rem', fontWeight: 900, fontSize: 10 },
-  regionChip: { display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--lp-text-soft)', fontWeight: 760 },
-  heldoutChip: { color: '#4FA66A', background: 'rgba(79,166,106,.14)', borderColor: 'rgba(79,166,106,.34)' },
-  trainChip: { color: 'var(--lp-bg-deep)', background: 'rgba(215,209,176,.1)', borderColor: 'rgba(215,209,176,.26)' },
-  detail: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 12, alignItems: 'center', border: '1px solid rgba(215,209,176,.22)', borderRadius: 'var(--lp-radius-md)', padding: 12, background: 'rgba(255,255,255,.035)', minWidth: 0 },
-  detailTitle: { margin: '7px 0 3px', fontSize: 16, lineHeight: 1.15 },
-  detailGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, minWidth: 0 },
-  detailItem: { display: 'grid', gap: 3, padding: 9, borderRadius: 14, background: 'rgba(255,255,255,.035)', border: '1px solid rgba(255,255,255,.075)' },
-  detailNote: { gridColumn: '1 / -1', margin: 0, color: 'var(--lp-text-soft)' },
-  footer: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', color: 'var(--lp-text-soft)', fontSize: 11 },
-  safeChip: { display: 'inline-flex', alignItems: 'center', gap: 6, lineHeight: 1.3 },
-  guardrail: { color: 'var(--lp-bg-deep)', margin: 0 },
   emptyState: { padding: 18, textAlign: 'center', color: 'var(--lp-muted)', borderBottom: '1px solid rgba(255,255,255,.06)' },
   paginationBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 0 4px' },
   paginationInfo: { fontSize: 12, color: 'var(--lp-muted)' },
