@@ -597,3 +597,38 @@ test('Casebook review drawer loads a draft and saves human sign-off', async () =
   fetchMock.mockRestore();
 });
 
+test('Dashboard overview stays summary-only while Archive and Analytics own deep content', async () => {
+  const overview = renderAppAt('/dashboard/overview');
+  await screen.findByText('Ringkasan risiko saat ini');
+  expect(document.querySelector('.overview-chart-grid')).toBeInTheDocument();
+  expect(document.querySelector('.risk-distribution-card')).toBeInTheDocument();
+  expect(document.querySelector('.risk-trend-card')).toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'Peta Nusantara' })).toBeInTheDocument();
+  expect(screen.getByRole('img', { name: /Peta Indonesia/i })).toBeInTheDocument();
+  expect(screen.queryByText(/Tujuan:/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Ringkasan command-center untuk membaca kondisi triase risiko/i)).not.toBeInTheDocument();
+  const auditorRail = screen.getByRole('region', { name: 'Auditor package tasks' });
+  expect(within(auditorRail).getByText('Auditor queue')).toBeInTheDocument();
+  expect(within(auditorRail).getByText('Most urgent')).toBeInTheDocument();
+  expect(within(auditorRail).getByRole('link', { name: /Open casebook/i })).toHaveAttribute('href', '/casebook/10%3Aocds-a?demo=1');
+  expect(screen.queryByText('Tender Archive Explorer')).not.toBeInTheDocument();
+  expect(screen.queryByText('Full Archive Risk Analytics')).not.toBeInTheDocument();
+  overview.fetchMock.mockRestore();
+  cleanup();
+
+  const archive = renderAppAt('/dashboard/archive');
+  expect(await screen.findByText('Tender Archive Explorer')).toBeInTheDocument();
+  expect(screen.getByText('Rows per page')).toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: /Inference status/i })).not.toBeInTheDocument();
+  expect(document.querySelector('.app-topbar')).not.toHaveTextContent('Inference');
+  archive.fetchMock.mockRestore();
+  cleanup();
+
+  const analytics = renderAppAt('/dashboard/analytics');
+  expect(await screen.findByText('Full Archive Risk Analytics')).toBeInTheDocument();
+  expect(screen.getByText('Filtered archive')).toBeInTheDocument();
+  expect(screen.queryByText('Tender Archive Explorer')).not.toBeInTheDocument();
+  analytics.fetchMock.mockRestore();
+  cleanup();
+});
+
