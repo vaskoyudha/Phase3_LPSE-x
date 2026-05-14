@@ -116,3 +116,22 @@ export interface QueueResponse {
   guardrail: string;
   demo_case_id: string | null;
 }
+
+export interface DatasetRow extends QueueItem {
+  category?: string;
+  status?: string;
+  date_published?: string;
+}
+
+export interface DatasetBrowserResponse {
+  total_rows: number;
+  matched_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  columns: string[];
+  items: DatasetRow[];
+  inference_status: InferenceStatus;
+  display_note: string;
+  guardrail: string;
+}
