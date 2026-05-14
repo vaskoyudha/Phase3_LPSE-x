@@ -365,7 +365,7 @@ export interface ReviewRecord {
     rationale?: string;
     model_interpretation?: string;
     checklist?: string[];
-    top_drivers?: Array<Record<string, string | number | boolean | null>>;
+    top_drivers?: CasebookExplanationDriver[];
     safety_note?: string;
   };
   created_at: string | null;
@@ -390,4 +390,55 @@ export interface ReviewUpdateRequest {
   notes: string;
   decision_summary: string;
   signed_off: boolean;
+}
+
+export interface CasebookExplanationDriver {
+  feature: string;
+  title: string;
+  human_label: string;
+  value_display: string;
+  shap_value: number;
+  impact_label: string;
+  direction: string;
+  direction_label: string;
+  reason: string;
+  reviewer_check: string;
+}
+
+export interface CasebookExplanationBrief {
+  summary: string;
+  confidence_label: string;
+  model_interpretation: string;
+  top_drivers: CasebookExplanationDriver[];
+  risk_reducers: CasebookExplanationDriver[];
+  reviewer_checklist: string[];
+  shap_note: string;
+  safety_note: string;
+}
+
+export interface CasebookPayload {
+  generated_at: string;
+  case_id: string;
+  metadata: Record<string, string | number | null>;
+  model_output: {
+    predicted_label: string;
+    probability: number;
+    probabilities: number[];
+    risk_rank: number | null;
+    risk_priority_score: number | null;
+  };
+  factors: Array<{
+    feature: string;
+    feature_label: string;
+    value: number;
+    shap_value: number;
+    direction: string;
+  }>;
+  narrative: string;
+  explanation_brief?: CasebookExplanationBrief;
+  reviewer_questions: string[];
+  guardrail: string;
+  heuristic_label_note: string;
+  guardrail_badges: string[];
+  provenance: Record<string, string>;
 }
