@@ -8,7 +8,6 @@ async function getJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-
 async function putJson<T>(url: string, payload: unknown): Promise<T> {
   const response = await fetch(url, {
     method: 'PUT',
