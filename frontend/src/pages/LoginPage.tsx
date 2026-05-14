@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { AlertCircle, Eye, EyeOff, KeyRound, LogIn, Mail } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { authStyles as a } from './authStyles';
+import { emitOperatorProfileChange } from '../data/useOperatorProfile';
 
 type LoginPageProps = {
   onNavigate: (href: string) => void;
@@ -40,6 +41,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
     } catch {
       // storage may be blocked; continue without persisting
     }
+    emitOperatorProfileChange();
     window.setTimeout(() => {
       setSubmitting(false);
       onNavigate('/dashboard/overview');

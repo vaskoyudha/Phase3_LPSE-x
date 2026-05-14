@@ -1302,7 +1302,7 @@ a:active {
   align-self: end;
   margin: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px;
+  grid-template-columns: minmax(0, 1fr) 48px;
   align-items: center;
   gap: 12px;
   padding: 14px;
@@ -1324,11 +1324,11 @@ a:active {
   background: rgba(235, 230, 201, 0.05);
 }
 .app-sidebar__profile-avatar {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 0;
+  border-radius: 12px;
   border: 1px solid var(--lp-glass-cream-border);
   background: var(--lp-cream);
   color: var(--lp-bg-deep);
@@ -1336,28 +1336,39 @@ a:active {
   font-size: 0.92rem;
   letter-spacing: 0.02em;
   box-shadow: var(--lp-glass-shadow-soft);
+  justify-self: end;
 }
 .app-sidebar__profile-meta {
   display: grid;
   gap: 3px;
   min-width: 0;
+  justify-self: start;
   text-align: left;
+}
+.app-sidebar__profile-eyebrow {
+  display: block;
+  color: var(--lp-muted);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .app-sidebar__profile-meta strong {
   display: block;
   color: var(--lp-text);
   font-weight: 850;
-  font-size: 1rem;
-  letter-spacing: -0.025em;
+  font-size: 1.05rem;
+  letter-spacing: -0.035em;
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.app-sidebar__profile-meta small {
+.app-sidebar__profile-meta em {
   display: block;
   color: var(--lp-cream);
   font-size: 0.78rem;
+  font-style: normal;
   font-weight: 720;
   line-height: 1.2;
   white-space: nowrap;

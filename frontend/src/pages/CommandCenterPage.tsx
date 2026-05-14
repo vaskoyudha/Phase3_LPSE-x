@@ -14,7 +14,7 @@ import { ScoredDatasetExplorer } from '../components/dashboard/ScoredDatasetExpl
 import { ArchiveAnalyticsPanel } from '../components/dashboard/ArchiveAnalyticsPanel';
 import { LokasiMap } from '../components/dashboard/LokasiMap';
 import { NusantaraAtlasCarousel } from '../components/dashboard/NusantaraAtlasCarousel';
-import { operatorProfile } from '../data/operatorProfile';
+import { useOperatorProfile } from '../data/useOperatorProfile';
 
 const defaultFilters: Filters = { search: '', risk: 'all', topN: '50', buyer: '', supplier: '' };
 type DashboardQueryState = { filters: Filters; datasetPage: number; archiveSplit: string; archiveSort: string; selectedRegionKey: string };
@@ -41,8 +41,6 @@ const INFERENCE_PANEL_ID = 'dashboard-inference-panel';
 const SELECTED_CASE_PANEL_ID = 'dashboard-selected-case-panel';
 const RIGHT_RAIL_STICKY_TOP = 104;
 const RIGHT_RAIL_STICKY_BOTTOM = 0;
-const PROFILE_NAME = operatorProfile.name;
-const PROFILE_ROLE = operatorProfile.role;
 export type DashboardTab = 'overview' | 'archive' | 'analytics' | 'locations' | 'activity';
 
 type DashboardTabDefinition = {
@@ -416,6 +414,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
 
 
 function DashboardProfileCard({ onNavigate }: { onNavigate?: (href: string) => void }) {
+  const profile = useOperatorProfile();
   const goToProfile = (event: React.MouseEvent<HTMLElement>) => {
     if (!onNavigate) return;
     event.preventDefault();
@@ -427,13 +426,13 @@ function DashboardProfileCard({ onNavigate }: { onNavigate?: (href: string) => v
       href="/profile"
       className="card"
       style={{ ...styles.profileCard, ...styles.profileCardLink }}
-      aria-label={`Open ${PROFILE_NAME} operator profile`}
+      aria-label={`Open ${profile.name} operator profile`}
       onClick={goToProfile}
     >
       <span style={styles.profileCopy}>
         <small style={styles.profileLabel}>Operator profile</small>
-        <strong style={styles.profileName}>{PROFILE_NAME}</strong>
-        <em style={styles.profileRole}>{PROFILE_ROLE}</em>
+        <strong style={styles.profileName}>{profile.name}</strong>
+        <em style={styles.profileRole}>{profile.role}</em>
       </span>
       <span style={styles.profileAvatar} aria-hidden="true">
         <UserCircle size={32} weight="fill" />
@@ -994,7 +993,7 @@ const styles: Record<string, CSSProperties> = {
     height: 48,
     display: 'grid',
     placeItems: 'center',
-    borderRadius: 0,
+    borderRadius: 12,
     background: 'var(--lp-cream)',
     color: 'var(--lp-bg-deep)',
     boxShadow: 'var(--lp-glass-shadow-soft)',

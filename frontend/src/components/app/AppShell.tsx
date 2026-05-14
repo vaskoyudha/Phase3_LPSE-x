@@ -1,7 +1,8 @@
 import { type ReactNode, useState } from 'react';
 import { CaretDown, ClipboardText, FileText, GearSix, House, List, Question, SidebarSimple, SlidersHorizontal, SquaresFour, UserCircle, X } from '@phosphor-icons/react';
 import { BrandMark } from '../shared/BrandMark';
-import { operatorProfile, operatorInitials } from '../../data/operatorProfile';
+import { operatorInitials } from '../../data/operatorProfile';
+import { useOperatorProfile } from '../../data/useOperatorProfile';
 
 export type AppRouteKey = 'home' | 'dashboard' | 'reviews' | 'reports' | 'settings' | 'help' | 'casebook' | 'transparency' | 'login' | 'register' | 'profile' | 'not-found';
 
@@ -189,46 +190,30 @@ export function AppShell({ active, title, onNavigate, children, dashboardNav, pa
   );
 }
 
-type AuthProfile = {
-  email?: string;
-  fullName?: string;
-};
-
-function readStoredAuth(): AuthProfile | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const session = window.localStorage.getItem('lpse-x:auth') ?? window.sessionStorage.getItem('lpse-x:auth');
-    if (!session) return null;
-    const parsed = JSON.parse(session) as { email?: string };
-    return parsed?.email ? { email: parsed.email } : null;
-  } catch {
-    return null;
-  }
-}
-
 function SidebarProfile({ onNavigate, active }: { onNavigate: (href: string) => void; active: AppRouteKey }) {
-  const initials = operatorInitials();
+  const profile = useOperatorProfile();
+  const initials = operatorInitials(profile);
   const isActive = active === 'profile';
-  const auth = readStoredAuth();
-  const subtitle = auth?.email ?? operatorProfile.role;
+  const subtitle = profile.email || profile.role;
 
   return (
     <a
       href="/profile"
       className="app-sidebar__profile"
-      aria-label={`Open ${operatorProfile.name} operator profile`}
+      aria-label={`Open ${profile.name} operator profile`}
       aria-current={isActive ? 'page' : undefined}
       onClick={(event) => {
         event.preventDefault();
         onNavigate('/profile');
       }}
     >
-      <span className="app-sidebar__profile-avatar" aria-hidden="true">
-        {initials || <UserCircle size={18} weight="fill" />}
-      </span>
       <span className="app-sidebar__profile-meta">
-        <strong title={operatorProfile.name}>{operatorProfile.name}</strong>
-        <small title={subtitle}>{subtitle}</small>
+        <small className="app-sidebar__profile-eyebrow">Operator profile</small>
+        <strong title={profile.name}>{profile.name}</strong>
+        <em title={subtitle}>{subtitle}</em>
+      </span>
+      <span className="app-sidebar__profile-avatar" aria-hidden="true">
+        {initials || <UserCircle size={24} weight="fill" />}
       </span>
     </a>
   );

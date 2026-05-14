@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { UserCircle, ShieldCheck, Briefcase, Buildings, MapPin, IdentificationBadge, Envelope, CalendarBlank, ArrowRight, SignOut } from '@phosphor-icons/react';
-import { operatorProfile, operatorInitials, type OperatorProfile } from '../data/operatorProfile';
+import { operatorInitials, type OperatorProfile } from '../data/operatorProfile';
+import { useOperatorProfile } from '../data/useOperatorProfile';
 
 type ProfilePageProps = {
   onNavigate: (href: string) => void;
@@ -40,7 +41,7 @@ function formatSessionTimestamp(iso?: string) {
 }
 
 export function ProfilePage({ onNavigate }: ProfilePageProps) {
-  const profile: OperatorProfile = operatorProfile;
+  const profile: OperatorProfile = useOperatorProfile();
   const [session, setSession] = useState<AuthSession | null>(() => readSession());
 
   useEffect(() => {
@@ -247,6 +248,7 @@ const styles: Record<string, CSSProperties> = {
   heroAvatar: {
     width: 132,
     height: 132,
+    borderRadius: 22,
     border: '1px solid var(--lp-glass-cream-border)',
     background: 'var(--lp-cream)',
     color: 'var(--lp-bg-deep)',

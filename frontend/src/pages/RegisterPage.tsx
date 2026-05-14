@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { AlertCircle, BadgeCheck, Building2, Eye, EyeOff, KeyRound, Mail, ShieldCheck, User, UserPlus } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { authStyles as a } from './authStyles';
+import { emitOperatorProfileChange } from '../data/useOperatorProfile';
 
 type RegisterPageProps = {
   onNavigate: (href: string) => void;
@@ -68,6 +69,7 @@ export function RegisterPage({ onNavigate }: RegisterPageProps) {
     } catch {
       // ignore storage failure
     }
+    emitOperatorProfileChange();
     window.setTimeout(() => {
       setSubmitting(false);
       setSuccess(true);
