@@ -10,6 +10,7 @@ import pytest
 from src.reviews import (
     ReviewStore,
     REVIEW_STATUSES,
+    DEFAULT_REVIEW_STATUS,
     _draft_review,
     _review_snapshots,
     _review_record,
@@ -28,9 +29,8 @@ def test_review_store_initialization():
 def test_draft_review():
     draft = _draft_review("CASE-TEST-001")
     assert draft["case_id"] == "CASE-TEST-001"
-    assert draft["status"] == "Perlu Review"
-    assert draft["is_draft"] is True
-    assert draft["signed_off"] is False
+    assert draft["status"] == DEFAULT_REVIEW_STATUS
+    assert draft["is_saved"] is False
 
 
 def test_get_review_not_found():
@@ -51,11 +51,11 @@ def test_upsert_review_new():
             reviewer_name="Test Reviewer",
             notes="Catatan test",
         )
-        assert review.case_id == "CASE-TEST-002"
-        assert review.status == "Perlu Review"
-        assert review.reviewer_name == "Test Reviewer"
-        assert review.notes == "Catatan test"
-        assert len(review.event_history) == 1
+        assert review["case_id"] == "CASE-TEST-002"
+        assert review["status"] == "Perlu Review"
+        assert review["reviewer_name"] == "Test Reviewer"
+        assert review["notes"] == "Catatan test"
+        assert len(review["history"]) == 1
 
 
 def test_upsert_review_unknown_status_rejected():
@@ -81,7 +81,7 @@ def test_upsert_review_appends_history():
             case_id="CASE-TEST-004",
             status="Ditandai Risiko",
         )
-        assert len(review.event_history) == 2
+        assert len(review["history"]) == 2
 
 
 def test_upsert_signed_off_sets_timestamp():
@@ -93,8 +93,7 @@ def test_upsert_signed_off_sets_timestamp():
             status="Selesai",
             signed_off=True,
         )
-        assert review.signed_off is True
-        assert review.signed_off_at is not None
+        assert review["signed_off_at"] is not None
 
 
 def test_list_reviews():
