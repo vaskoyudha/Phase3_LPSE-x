@@ -196,3 +196,12 @@ export interface ArchiveAnalyticsFilters {
   sort: string;
   region_key?: string;
 }
+
+export interface ArchiveAnalyticsCounts {
+  total_rows: number;
+  matched_count: number;
+  train_rows: number;
+  heldout_rows: number;
+  risk_distribution: Record<string, number>;
+  split_distribution: Record<string, number>;
+}
