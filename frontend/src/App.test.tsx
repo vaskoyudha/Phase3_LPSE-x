@@ -632,3 +632,31 @@ test('Dashboard overview stays summary-only while Archive and Analytics own deep
   cleanup();
 });
 
+test('Analytics rail resolves high-risk mix across archive distribution key variants', async () => {
+  const { fetchMock } = renderAppAt('/dashboard/analytics');
+
+  const analyticsRail = await screen.findByRole('region', { name: 'Analytics framing' });
+  expect(within(analyticsRail).getByText('Risk mix')).toBeInTheDocument();
+  await waitFor(() => expect(within(analyticsRail).getByText('32.380')).toBeInTheDocument());
+
+  fetchMock.mockRestore();
+});
+
+test('Archive analytics separates undetected regions from normal regional concentration rows', () => {
+  const analyticsWithUnknownRegion: ArchiveAnalyticsResponse = {
+    ...archiveAnalyticsResponse,
+    regional_concentration: [
+      { label: 'Tidak tersedia', count: 11451, percent: 20, high_risk_count: 11451, high_risk_percent: 100, total_contract_value: 0, average_risk_score: 0.8, region: 'Tidak tersedia', region_type: 'unknown', region_source: 'derived_from_buyer_name', region_note: 'Buyer name text did not produce a kab/kota match.', buyer: null },
+      { label: 'Kabupaten Tuban', count: 900, percent: 10, high_risk_count: 541, high_risk_percent: 60, total_contract_value: 1800000000000, average_risk_score: 0.72, region: 'Kabupaten Tuban', region_type: 'kabupaten', region_source: 'derived_from_buyer_name', region_note: 'Derived from buyer_name display only.', buyer: null },
+    ],
+  };
+
+  render(<ArchiveAnalyticsPanel analytics={analyticsWithUnknownRegion} activeRisk="all" onRiskFilter={() => undefined} onSelectPoint={() => undefined} />);
+
+  const regionalPanel = screen.getByRole('tabpanel', { name: 'Regional Risk Concentration' });
+  expect(within(regionalPanel).getByText('Kabupaten Tuban')).toBeInTheDocument();
+  expect(within(regionalPanel).getByText('Tidak terklasifikasi')).toBeInTheDocument();
+  expect(within(regionalPanel).getByText(/Tidak terdeteksi dari nama buyer/i)).toBeInTheDocument();
+  expect(within(regionalPanel).queryByText('Tidak tersedia')).not.toBeInTheDocument();
+});
+
