@@ -135,3 +135,18 @@ export interface DatasetBrowserResponse {
   display_note: string;
   guardrail: string;
 }
+
+export interface ArchiveRow extends DatasetRow {
+  archive_id: string;
+  archive_rank: number;
+  split_risk_rank: number;
+  source_split: 'train_data' | 'test_data' | string;
+  is_heldout: boolean;
+  eval_claim_scope: 'heldout_test_only' | 'archive_browsing_only' | string;
+  buyer_region?: string;
+  buyer_region_type?: string;
+  buyer_region_source?: 'derived_from_buyer_name' | string;
+  buyer_region_note?: string;
+  buyer_region_key?: string;
+  region_key?: string;
+}
