@@ -14,6 +14,7 @@ import { ScoredDatasetExplorer } from '../components/dashboard/ScoredDatasetExpl
 import { ArchiveAnalyticsPanel } from '../components/dashboard/ArchiveAnalyticsPanel';
 import { LokasiMap } from '../components/dashboard/LokasiMap';
 import { NusantaraAtlasCarousel } from '../components/dashboard/NusantaraAtlasCarousel';
+import dashboardSectionIntroBackground from '../assets/dashboard/dashboard-section-intro-background.jpeg';
 
 const defaultFilters: Filters = { search: '', risk: 'all', topN: '50', buyer: '', supplier: '' };
 type DashboardQueryState = { filters: Filters; datasetPage: number; archiveSplit: string; archiveSort: string; selectedRegionKey: string };
@@ -762,7 +763,6 @@ function ArchiveRailCards({ dataset, splitFilter, sort, selectedRegionKey }: { d
 function DashboardSectionIntro({ tab }: { tab: DashboardTabDefinition }) {
   return (
     <section className="card dashboard-section-intro" style={styles.sectionIntro} aria-label={`${tab.label} dashboard intro`}>
-      <span aria-hidden="true" style={styles.sectionIntroLine} />
       <div style={styles.sectionIntroBody}>
         <div>
           <h2 style={styles.sectionIntroTitle}>{tab.title}</h2>
@@ -1084,21 +1084,15 @@ const styles: Record<string, CSSProperties> = {
     gap: 8,
     overflow: 'hidden',
     position: 'relative',
-    background: 'rgba(18, 16, 12, 0.88)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    border: '1px solid rgba(215, 209, 176, 0.18)',
+    backgroundImage: `url(${dashboardSectionIntroBackground})`,
+    backgroundPosition: 'center',
+    backgroundSize: 'cover',
+    border: '1px solid rgba(255, 255, 255, 0.46)',
+    outline: '1px solid rgba(215, 209, 176, 0.28)',
+    outlineOffset: '-3px',
     borderRadius: 'var(--lp-radius-md)',
     boxShadow: 'none',
     color: 'var(--lp-text-soft)',
-  },
-  sectionIntroLine: {
-    position: 'absolute',
-    inset: '0 auto auto 12px',
-    width: 112,
-    height: 2,
-    background: 'var(--lp-cream)',
-    opacity: .5,
   },
   sectionIntroBody: { display: 'grid', gap: 4, alignItems: 'center', justifyItems: 'center', textAlign: 'center' },
   sectionIntroTitle: { margin: 0, color: '#FFFFFF', fontSize: 'clamp(1.45rem, 2vw, 2rem)', lineHeight: 1.05, letterSpacing: '-.035em', textWrap: 'balance' },
