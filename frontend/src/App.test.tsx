@@ -916,3 +916,48 @@ test('CommandCenterPage requests archive pages at the 100-row contract size with
   fetchMock.mockRestore();
 });
 
+test('Archive analytics risk composition filters risk and priority map jumps to the target archive page', async () => {
+  const onSelect = vi.fn();
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
+    if (url.startsWith('/api/archive')) return jsonResponse(datasetResponse);
+    if (url.startsWith('/api/casebook/')) return jsonResponse(casebook);
+    throw new Error(`Unexpected fetch ${url}`);
+  });
+
+  render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="analytics" onSelect={onSelect} onOpenCasebook={() => undefined} />);
+
+  await screen.findByText('Komposisi Risiko');
+  fireEvent.click(await screen.findByLabelText('Filter Risiko Tinggi'));
+  await waitFor(() => expect(fetchMock.mock.calls.some(([input]) => {
+    const url = String(input);
+    return url.startsWith('/api/archive/analytics?') && new URLSearchParams(url.split('?')[1]).get('risk') === 'Risiko Tinggi';
+  })).toBe(true));
+
+  fireEvent.click(screen.getByRole('button', { name: /archive page 3/i }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/archive?page=3&page_size=100&risk=Risiko+Tinggi&sort=risk_desc'));
+  expect(onSelect).toHaveBeenCalledWith(queueItem.case_id);
+});
+
+
+
+test('LokasiMap renders open-source map copy, SVG backup paths, unsupported panel, and emits region_key selection', () => {
+  const selectRegion = vi.fn();
+  const { container } = render(<LokasiMap analytics={archiveAnalyticsResponse} selectedRegionKey="" onSelectRegion={selectRegion} />);
+  expect(screen.getByText('Open-source Indonesia risk map')).toBeInTheDocument();
+  expect(screen.getByRole('img', { name: /Local Indonesia kabupaten kota SVG backup map/i })).toBeInTheDocument();
+  expect(screen.getByText('Unsupported levels')).toBeInTheDocument();
+  expect(screen.getByText('Provinsi Jawa Barat')).toBeInTheDocument();
+  expect(screen.getByText('Unmatched kab/kota')).toBeInTheDocument();
+  expect(screen.getByText('Kabupaten Tidak Ada')).toBeInTheDocument();
+
+  const bandungPath = container.querySelector<SVGPathElement>('svg path[data-region-key="kota-bandung"]');
+  const bandungBubble = container.querySelector<SVGCircleElement>('svg circle[data-region-key="kota-bandung"]');
+  expect(bandungPath).not.toBeNull();
+  expect(bandungBubble).not.toBeNull();
+  fireEvent.click(bandungPath!);
+  expect(selectRegion).toHaveBeenCalledWith('kota-bandung');
+});
+
+
