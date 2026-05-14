@@ -779,3 +779,53 @@ test('FilterRail updates risk filters with compact controls only', () => {
   expect(screen.queryByText(/bukan tuduhan pelanggaran/)).not.toBeInTheDocument();
 });
 
+test('KpiCards prefer full archive database counts over visible Top-N queue counts', () => {
+  render(<KpiCards queue={queueResponse} archiveCounts={archiveAnalyticsResponse.counts} />);
+
+  expect(within(screen.getByRole('region', { name: 'Total Packages KPI' })).getByText('465.184')).toBeInTheDocument();
+  expect(within(screen.getByRole('region', { name: 'Risiko Tinggi KPI' })).getByText('32.380')).toBeInTheDocument();
+  expect(within(screen.getByRole('region', { name: 'Risiko Sedang KPI' })).getByText('281.722')).toBeInTheDocument();
+  expect(screen.queryByText(/database terfilter/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/dari database/i)).not.toBeInTheDocument();
+});
+
+test('RiskDistributionChart prefers actual filtered archive counts over visible queue counts', () => {
+  render(<RiskDistributionChart queue={queueResponse} archiveCounts={archiveAnalyticsResponse.counts} />);
+
+  const chart = screen.getByRole('region', { name: 'Distribusi Risiko' });
+  expect(within(chart).getByText('database terfilter')).toBeInTheDocument();
+  expect(within(chart).getByText('32.380 paket')).toBeInTheDocument();
+  expect(within(chart).getByText('281.722 paket')).toBeInTheDocument();
+  expect(within(chart).getByText('151.082 paket')).toBeInTheDocument();
+  expect(within(chart).queryByText('1 paket')).not.toBeInTheDocument();
+});
+
+
+test('CommandCenterPage requests the full archive with page_size=100 and no stale test split copy', async () => {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
+    if (url.startsWith('/api/archive')) return jsonResponse(datasetResponse);
+    if (url.startsWith('/api/casebook/')) return jsonResponse(casebook);
+    throw new Error(`Unexpected fetch ${url}`);
+  });
+
+  render(<CommandCenterPage demoState={demoState} queue={queueResponse} selectedId={queueItem.case_id} activeTab="analytics" onSelect={() => undefined} onOpenCasebook={() => undefined} />);
+
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/^\/api\/archive\?/)));
+  const archiveUrl = fetchMock.mock.calls.map(([input]) => String(input)).find((url) => url.startsWith('/api/archive?'));
+  expect(archiveUrl).toBeTruthy();
+  expect(new URLSearchParams(archiveUrl!.split('?')[1]).get('page_size')).toBe('100');
+  expect(new URLSearchParams(archiveUrl!.split('?')[1]).get('sort')).toBe('risk_desc');
+  expect(fetchMock.mock.calls.map(([input]) => String(input)).some((url) => url.startsWith('/api/archive/analytics?') && new URLSearchParams(url.split('?')[1]).get('sort') === 'risk_desc')).toBe(true);
+  expect(await screen.findByText('Full Archive Risk Analytics')).toBeInTheDocument();
+  expect(screen.getByText('Risk Tier × Contract Value Matrix')).toBeInTheDocument();
+  expect(screen.getByText(/distribusi asli dibaca dari bar komposisi sebelum scatter/i)).toBeInTheDocument();
+  expect(screen.getByText('True filtered archive mix')).toBeInTheDocument();
+  expect(screen.getByText(/matrix uses balanced sample, not proportional dots/i)).toBeInTheDocument();
+  expect(screen.getByText(/Balanced sample hanya untuk visibilitas scatter/i)).toBeInTheDocument();
+  expect(screen.getByText('Regional Risk Concentration')).toBeInTheDocument();
+  expect(screen.getByText('Top Buyer Risk Concentration')).toBeInTheDocument();
+  expect(screen.queryByText(/test_data split/i)).not.toBeInTheDocument();
+});
+
