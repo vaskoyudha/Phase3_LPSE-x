@@ -44,4 +44,5 @@ export const api = {
     const query = params.toString();
     return getJson<ReviewListResponse>(`/api/reviews${query ? `?${query}` : ''}`);
   },
+  review: (caseId: string) => getJson<ReviewRecord>(`/api/reviews/${encodeURIComponent(caseId)}`),
 };
