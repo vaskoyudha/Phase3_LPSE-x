@@ -40,10 +40,7 @@ export function ShapFactorBars({ factors, title = 'Mengapa paket ini diprioritas
           <p style={styles.eyebrow}>Model drivers</p>
           <h2 style={styles.title}>{title}</h2>
         </div>
-        <div style={styles.summaryBox}>
-          <strong>Apa arti SHAP?</strong>
-          <p style={styles.summary}>SHAP menunjukkan faktor mana yang menggeser skor model naik atau turun dari baseline. Ini membantu prioritas review, bukan bukti pelanggaran.</p>
-        </div>
+        <p style={styles.summary}>SHAP menunjukkan faktor mana yang menggeser skor model naik atau turun dari baseline. Ini membantu prioritas review, bukan bukti pelanggaran.</p>
       </div>
 
       <div style={styles.list}>
@@ -99,7 +96,6 @@ const styles: Record<string, CSSProperties> = {
   header: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, .56fr)', gap: 14, alignItems: 'start' },
   eyebrow: { margin: '0 0 6px', color: 'var(--lp-cream)', fontSize: '.78rem', fontWeight: 820, letterSpacing: '.02em' },
   title: { margin: 0, fontSize: 'clamp(1.08rem, 1.4vw, 1.3rem)', lineHeight: 1.12, letterSpacing: '-.025em', textWrap: 'balance' },
-  summaryBox: { display: 'grid', gap: 5, color: 'var(--lp-text-soft)' },
   summary: { margin: 0, color: 'var(--lp-muted)', lineHeight: 1.5, fontSize: '.86rem' },
   list: { display: 'grid', gap: 10 },
   factorItem: {

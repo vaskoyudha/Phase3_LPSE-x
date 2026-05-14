@@ -81,7 +81,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
       <section data-testid="analytics-zone-state" data-zone="state" style={styles.zoneState}>
         <h3 style={styles.zoneHeading}>State of the archive</h3>
         {initialLoading ? (
-          <ZoneSkeleton height={200} label="Loading risk mix" variant="donut" />
+          <ZoneSkeleton height={200} label="Loading state overview" />
         ) : (
           <>
             <div style={styles.kpiRow}>
@@ -107,7 +107,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
 
       <section data-testid="analytics-zone-focus" data-zone="focus">
         <h3 style={styles.zoneHeading}>Where to focus</h3>
-        {initialLoading ? <ZoneSkeleton height={320} label="Loading priority matrix" variant="matrix" /> : (
+        {initialLoading ? <ZoneSkeleton height={320} label="Loading focus zone" /> : (
           <div style={styles.zoneFocusGrid}>
             <article style={{ ...styles.panel, minWidth: 0 }}>
               <div style={styles.panelHeader}>
@@ -438,7 +438,7 @@ function RegionalBuyerTabs({ regional, buyer, regionalNote, activeRisk, loading 
     setActiveTab('regional');
   }, [activeRisk]);
 
-  if (loading) return <ZoneSkeleton height={200} label="Loading regions" variant="list" />;
+  if (loading) return <ZoneSkeleton height={200} label="Loading concentration data" />;
 
   const tabs = ['regional', 'buyer'] as const;
 
@@ -555,8 +555,8 @@ function EmptyState({ text }: { text: string }) {
   return <p style={styles.empty}>{text}</p>;
 }
 
-function ZoneSkeleton({ height, label, variant = 'matrix' }: { height: number; label: string; variant?: 'matrix' | 'bars' | 'donut' | 'list' }) {
-  return <ChartLoadingState variant={variant} height={height} label={label} detail="" />;
+function ZoneSkeleton({ height, label }: { height: number; label: string }) {
+  return <ChartLoadingState variant="matrix" height={height} label={label} detail="" />;
 }
 
 function formatNumber(value?: number) {

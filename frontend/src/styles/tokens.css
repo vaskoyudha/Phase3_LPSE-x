@@ -7,10 +7,10 @@
   --lp-bg-warm: #beb9b4;
   --lp-bg-deep: #11100f;
   --lp-panel-solid: #201f1e;
-  --lp-panel: rgba(32, 31, 30, 0.62);
+  --lp-panel: rgba(32, 31, 30, 0.84);
   --lp-panel-strong: #11100f;
-  --lp-panel-soft: rgba(42, 41, 39, 0.62);
-  --lp-panel-glass: rgba(32, 31, 30, 0.62);
+  --lp-panel-soft: rgba(42, 41, 39, 0.8);
+  --lp-panel-glass: rgba(32, 31, 30, 0.86);
   --lp-white: #ffffff;
   --lp-cream: #ebe6c9;
   --lp-cream-soft: #f6f1d8;
@@ -1320,6 +1320,15 @@ a:active {
   box-shadow: none;
   overflow: visible;
 }
+
+.app-main--home {
+  background-image:
+    linear-gradient(180deg, rgba(17,16,15,0) 0%, rgba(17,16,15,0) 68%, rgba(17,16,15,0.58) 86%, var(--lp-bg-deep) 100%),
+    url('../assets/landing/landing-background.jpeg');
+  background-repeat: no-repeat, no-repeat;
+  background-position: center top, center top;
+  background-size: 100% 100dvh, 100% 100dvh;
+}
 .app-main--dashboard {
   min-height: 100dvh;
   overflow: visible;
@@ -1339,6 +1348,31 @@ a:active {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.app-main--home .app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 65;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: rgba(17, 16, 15, 0.74);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+}
+
+.app-main--home .app-menu-button--toggle {
+  display: grid;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--lp-text-soft);
+}
+
+.app-main--home .app-menu-button--toggle:hover {
+  background: rgba(235, 230, 201, 0.10);
+  border-color: rgba(235, 230, 201, 0.16);
+  color: var(--lp-cream);
 }
 .app-menu-button {
   width: 38px;
@@ -1902,4 +1936,10 @@ a:active {
     justify-content: flex-start;
   }
   .dashboard-floating-nav a { flex: 0 0 auto; }
+}
+
+/* Keep the landing artwork clean: no global grid/vignette overlay on the landing page. */
+body:has(.landing-shell)::before,
+body:has(.landing-shell)::after {
+  opacity: 0;
 }

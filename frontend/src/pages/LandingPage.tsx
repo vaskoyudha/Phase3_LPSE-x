@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { BookOpen, ShieldCheck, Zap, Lock, BarChart3, Users, FlaskConical } from 'lucide-react';
+import { BookOpen, ShieldCheck, Lock, BarChart3, Users, FlaskConical } from 'lucide-react';
 import type { DemoState } from '../types/api';
-import landingJumbotronBg from '../assets/landing/landing-jumbotron-bg.svg';
 import { GuardrailBanner } from '../components/shared/GuardrailBanner';
 import { StaticBundleStatus } from '../components/shared/StaticBundleStatus';
 
@@ -14,16 +13,11 @@ type LandingPageProps = {
 
 export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPageProps) {
   const casebookAction = onOpenCasebook ?? onOpen;
-  const totalStatus = demoState.ready ? 'Ready' : 'Warm-up';
 
   return (
-    <main style={styles.shell}>
+    <main className="landing-shell" style={styles.shell}>
       <section style={styles.hero}>
         <div style={styles.heroContent}>
-          <span style={styles.eyebrow}>
-            <Zap size={13} style={{ opacity: 0.7 }} />
-            AI for accountable procurement
-          </span>
           <h1 style={styles.title}>
             LPSE-X
             <span style={styles.titleAccent}>Command Center</span>
@@ -47,60 +41,6 @@ export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPagePr
                 <small style={styles.btnHint}>See explainable dossier</small>
               </span>
             </button>
-          </div>
-        </div>
-
-        <div style={styles.previewWrapper}>
-          <div style={styles.previewGlow} />
-          <div style={styles.previewCard}>
-            <div style={styles.previewHeader}>
-              <strong>Risk Overview</strong>
-              <span style={styles.previewBadge}>{totalStatus}</span>
-            </div>
-            <div style={styles.metricsRow}>
-              <MetricPreview label="Risiko Tinggi" value="482" tone="#E05A4F" />
-              <MetricPreview label="Risiko Sedang" value="1.256" tone="#D8A42F" />
-              <MetricPreview label="Risiko Rendah" value="2.008" tone="#4FA66A" />
-              <MetricPreview label="Total" value="3.746" tone="#d7d1b0" />
-            </div>
-
-            <div style={styles.previewDivider} />
-
-            <div style={styles.previewHeader}>
-              <strong>Top Risk Queue</strong>
-              <span style={styles.previewMuted}>Local demo</span>
-            </div>
-            {[
-              ['1', 'Pembangunan Jalan Lingkar Selatan Kab. X', '0,92', '#E05A4F'],
-              ['2', 'Pengadaan Alat Kesehatan RSUD Kab. Y', '0,89', '#b48d65'],
-              ['3', 'Pembangunan Gedung Kantor Dinas Z', '0,86', '#D8A42F'],
-            ].map(([rank, title, score, color]) => (
-              <div key={rank} style={styles.queueRow}>
-                <span style={{ ...styles.rankBadge, borderColor: color, color }}>{rank}</span>
-                <span style={styles.queueTitle}>{title}</span>
-                <strong style={{ color, fontSize: 13, fontWeight: 800 }}>{score}</strong>
-              </div>
-            ))}
-
-            <div style={styles.previewDivider} />
-
-            <div style={styles.previewHeader}>
-              <strong>Top SHAP Factors</strong>
-              <span style={styles.previewMuted}>Selected</span>
-            </div>
-            {[
-              ['Buyer-supplier repeat', 86, '+0,256', '#E05A4F'],
-              ['Price deviation ratio', 72, '+0,213', '#b48d65'],
-              ['Tender value anomaly', 58, '+0,178', '#D8A42F'],
-            ].map(([label, width, value, color]) => (
-              <div key={label as string} style={styles.factorRow}>
-                <span style={styles.factorLabel}>{label as string}</span>
-                <div style={styles.factorTrack}>
-                  <span style={{ ...styles.factorFill, width: `${width}%`, background: color as string }} />
-                </div>
-                <strong style={{ fontSize: 12, color: color as string }}>{value as string}</strong>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -137,18 +77,6 @@ export function LandingPage({ demoState, onOpen, onOpenCasebook }: LandingPagePr
     </main>
   );
 }
-
-
-
-function MetricPreview({ label, value, tone }: { label: string; value: string; tone: string }) {
-  return (
-    <div style={{ ...styles.metricCard, borderColor: `${tone}44`, background: `${tone}0d` }}>
-      <span style={{ fontSize: 11, color: 'var(--lp-muted)', letterSpacing: '.03em' }}>{label}</span>
-      <strong style={{ fontSize: 22, fontWeight: 900, color: tone, letterSpacing: '-.02em' }}>{value}</strong>
-    </div>
-  );
-}
-
 function CapabilityCard({ icon, title, desc }: { icon: ReactNode; title: string; desc: string }) {
   return (
     <div style={styles.capCard}>
@@ -250,30 +178,20 @@ const styles: Record<string, CSSProperties> = {
   },
 
   hero: {
-    position: 'relative',
-    isolation: 'isolate',
-    overflow: 'hidden',
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 'clamp(32px, 5vw, 64px)',
-    alignItems: 'start',
+    gridTemplateColumns: 'minmax(0, 960px)',
+    justifyContent: 'center',
+    alignItems: 'center',
     minHeight: 'clamp(620px, 56.2vw, 768px)',
-    padding: 'clamp(32px, 4vw, 56px)',
+    padding: 'clamp(32px, 4vw, 56px) 0',
     marginBottom: 56,
-    border: '1px solid rgba(235, 230, 201, 0.10)',
-    borderRadius: 32,
-    backgroundImage: `linear-gradient(90deg, rgba(17,16,15,.30), rgba(17,16,15,.12) 48%, rgba(17,16,15,.24)), url(${landingJumbotronBg})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center center',
-    backgroundSize: '100% 100%',
-    boxShadow: '0 28px 90px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08)',
   },
   heroContent: {
-    position: 'relative',
-    zIndex: 1,
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
     gap: 0,
+    textAlign: 'center',
   },
   eyebrow: {
     display: 'inline-flex',
@@ -319,10 +237,11 @@ const styles: Record<string, CSSProperties> = {
     color: 'var(--lp-muted)',
     fontSize: 'clamp(0.95rem, 1.4vw, 1.1rem)',
     lineHeight: 1.75,
-    margin: '0 0 36px',
+    margin: '0 auto 36px',
   },
   actions: {
     display: 'flex',
+    justifyContent: 'center',
     gap: 14,
     flexWrap: 'wrap',
   },
@@ -365,119 +284,6 @@ const styles: Record<string, CSSProperties> = {
     color: 'var(--lp-muted)',
     opacity: 0.7,
   },
-
-  previewWrapper: {
-    position: 'relative',
-    zIndex: 1,
-  },
-  previewGlow: {
-    position: 'absolute',
-    inset: '-20%',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(235, 230, 201, .06) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
-  previewCard: {
-    position: 'relative',
-    border: '1px solid var(--lp-line)',
-    borderRadius: 24,
-    padding: 'clamp(18px, 2.5vw, 28px)',
-    background: 'rgba(32, 31, 30, .6)',
-    backdropFilter: 'blur(12px)',
-    boxShadow: '0 24px 80px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .05)',
-  },
-  previewHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-    fontSize: 13,
-    fontWeight: 700,
-    color: 'var(--lp-cream)',
-    letterSpacing: '-.01em',
-  },
-  previewBadge: {
-    fontSize: 11,
-    fontWeight: 700,
-    padding: '3px 10px',
-    borderRadius: 999,
-    background: 'rgba(79, 166, 106, .15)',
-    color: '#4FA66A',
-    border: '1px solid rgba(79, 166, 106, .25)',
-  },
-  previewMuted: {
-    fontSize: 11,
-    color: 'var(--lp-muted)',
-    fontWeight: 500,
-  },
-  previewDivider: {
-    height: 1,
-    background: 'var(--lp-line)',
-    margin: '18px 0',
-  },
-  metricsRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: 10,
-  },
-  metricCard: {
-    border: '1px solid',
-    borderRadius: 14,
-    padding: '12px 14px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-  },
-  queueRow: {
-    display: 'grid',
-    gridTemplateColumns: '32px 1fr auto',
-    gap: 12,
-    alignItems: 'center',
-    padding: '10px 0',
-    borderBottom: '1px solid rgba(255, 255, 255, .04)',
-  },
-  rankBadge: {
-    width: 28,
-    height: 28,
-    border: '1.5px solid',
-    borderRadius: 10,
-    display: 'grid',
-    placeItems: 'center',
-    fontSize: 12,
-    fontWeight: 900,
-    background: 'rgba(17, 16, 15, .7)',
-  },
-  queueTitle: {
-    fontSize: 12,
-    color: 'var(--lp-text-soft)',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  factorRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 50px',
-    gap: 10,
-    alignItems: 'center',
-    padding: '7px 0',
-  },
-  factorLabel: {
-    fontSize: 12,
-    color: 'var(--lp-text-soft)',
-  },
-  factorTrack: {
-    height: 8,
-    borderRadius: 999,
-    background: 'rgba(255, 255, 255, .06)',
-    overflow: 'hidden',
-  },
-  factorFill: {
-    display: 'block',
-    height: '100%',
-    borderRadius: 999,
-    transition: 'width .6s ease',
-  },
-
   capSection: {
     marginBottom: 64,
   },

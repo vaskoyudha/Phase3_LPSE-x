@@ -1,17 +1,11 @@
 import type { CSSProperties } from 'react';
-import { AlertTriangle, CheckCircle2, MessageSquareText } from 'lucide-react';
+import { CheckCircle2, MessageSquareText } from 'lucide-react';
 import type { CasebookPayload } from '../../types/api';
 import { glassCreamIcon } from '../shared/glassStyles';
 
 export function RiskStoryRail({ casebook }: { casebook: CasebookPayload }) {
   const brief = casebook.explanation_brief;
   const narrative = casebook.narrative.trim() || 'No generated narrative is available for this sample. Use the score and factor list as the starting point for reviewer triage.';
-  const questions = brief?.reviewer_checklist?.length
-    ? brief.reviewer_checklist
-    : casebook.reviewer_questions.length > 0
-    ? casebook.reviewer_questions
-    : ['Review the highest positive model driver and confirm whether the underlying procurement record supports it.'];
-
   return (
     <div style={styles.rail}>
       <section className="card" style={styles.card}>
@@ -32,33 +26,6 @@ export function RiskStoryRail({ casebook }: { casebook: CasebookPayload }) {
         ) : (
           <p style={styles.narrative}>{narrative}</p>
         )}
-      </section>
-
-      <section className="card" style={styles.card}>
-        <div style={styles.sectionHeader}>
-          <span style={styles.icon}><CheckCircle2 size={16} /></span>
-          <div>
-            <p style={styles.eyebrow}>Reviewer next steps</p>
-            <h2 style={styles.title}>Questions to check</h2>
-          </div>
-        </div>
-        <ol className="casebook-question-list" style={styles.questionList}>
-          {questions.map((question, index) => (
-            <li className="casebook-question-item" key={question} style={{ ...styles.questionItem, animationDelay: `${index * 60}ms` }}>
-              <span style={styles.questionIndex}>{index + 1}</span>
-              <span style={styles.questionText}>{question}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="card" style={styles.safetyCard}>
-        <span style={styles.safetyIcon}><AlertTriangle size={16} /></span>
-        <div style={{ minWidth: 0 }}>
-          <p style={styles.eyebrow}>Safety reminder</p>
-          <h2 className="safe-copy" style={styles.safetyTitle}>Ini adalah triase risiko, prioritas review, bukan tuduhan pelanggaran.</h2>
-          {casebook.heuristic_label_note && <p style={styles.safetyNote}>{casebook.heuristic_label_note}</p>}
-        </div>
       </section>
     </div>
   );
@@ -167,7 +134,7 @@ function DriverCard({
       <strong style={styles.driverTitle}>{driver.title}</strong>
       <p style={styles.driverReason}>{driver.reason}</p>
       <div style={styles.driverCheck}>
-        <span style={styles.checkLabel}>Checklist:</span>
+        <span style={styles.checkLabel}>Checklist</span>
         <p style={styles.checkText}>{driver.reviewer_check}</p>
       </div>
       <dl style={styles.driverMeta}>
@@ -307,16 +274,4 @@ const styles: Record<string, CSSProperties> = {
   questionItem: { display: 'grid', gridTemplateColumns: '30px minmax(0, 1fr)', gap: 10, alignItems: 'start', paddingTop: 10, borderTop: '1px solid var(--lp-line)' },
   questionIndex: { display: 'grid', placeItems: 'center', width: 26, height: 26, borderRadius: 999, color: 'var(--lp-bg-deep)', fontWeight: 860, fontSize: '.78rem', ...glassCreamIcon },
   questionText: { color: 'var(--lp-text-soft)', lineHeight: 1.45 },
-  safetyCard: {
-    padding: 18,
-    display: 'grid',
-    gridTemplateColumns: '34px minmax(0, 1fr)',
-    gap: 10,
-    alignItems: 'start',
-    borderColor: 'rgba(215,209,176,.24)',
-    background: 'rgba(215,209,176,.08)',
-  },
-  safetyIcon: { display: 'grid', placeItems: 'center', width: 34, height: 34, borderRadius: 14, color: 'var(--lp-cream)', background: 'rgba(215,209,176,.12)' },
-  safetyTitle: { margin: 0, lineHeight: 1.22, fontSize: '1rem', letterSpacing: '-.02em' },
-  safetyNote: { color: 'var(--lp-muted)', margin: '8px 0 0', lineHeight: 1.45 },
 };
