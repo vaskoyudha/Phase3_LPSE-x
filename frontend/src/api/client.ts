@@ -20,3 +20,7 @@ async function putJson<T>(url: string, payload: unknown): Promise<T> {
   }
   return response.json() as Promise<T>;
 }
+
+export const api = {
+  demoState: () => getJson<DemoState>('/api/demo-state'),
+};
