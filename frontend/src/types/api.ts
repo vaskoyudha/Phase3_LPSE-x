@@ -205,3 +205,34 @@ export interface ArchiveAnalyticsCounts {
   risk_distribution: Record<string, number>;
   split_distribution: Record<string, number>;
 }
+
+export interface ArchivePriorityPoint {
+  archive_id: string;
+  case_id: string;
+  source_split: string;
+  is_heldout: boolean;
+  eval_claim_scope: string;
+  title: string;
+  buyer: string;
+  supplier: string;
+  region: string;
+  risk_label: string;
+  filter_value: string;
+  risk_score: number;
+  probability_high: number | null;
+  contract_value: number | null;
+  tender_value_display: string;
+  filtered_rank: number;
+  archive_page: number;
+}
+
+export interface ArchivePriorityMapMeta {
+  point_limit: number;
+  points_returned: number;
+  matched_count: number;
+  total_value_candidates: number;
+  is_capped: boolean;
+  sample_strategy: string;
+  null_value_rows: number;
+  zero_value_rows: number;
+}
