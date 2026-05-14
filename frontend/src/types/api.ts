@@ -365,7 +365,7 @@ export interface ReviewRecord {
     rationale?: string;
     model_interpretation?: string;
     checklist?: string[];
-    top_drivers?: Array<Record<string, string | number | boolean | null>>;
+    top_drivers?: CasebookExplanationDriver[];
     safety_note?: string;
   };
   created_at: string | null;
@@ -390,4 +390,17 @@ export interface ReviewUpdateRequest {
   notes: string;
   decision_summary: string;
   signed_off: boolean;
+}
+
+export interface CasebookExplanationDriver {
+  feature: string;
+  title: string;
+  human_label: string;
+  value_display: string;
+  shap_value: number;
+  impact_label: string;
+  direction: string;
+  direction_label: string;
+  reason: string;
+  reviewer_check: string;
 }
