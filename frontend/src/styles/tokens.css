@@ -2167,3 +2167,49 @@ body:has(.landing-shell)::after {
 .app-sidebar__sponsor-cell:hover .app-sidebar__sponsor-img {
   filter: brightness(1.1) saturate(1);
 }
+
+
+/* SVG fallback map: pan & zoom controls */
+.lokasi-map__svg-wrap { position: relative; width: 100%; }
+.lokasi-map__svg-wrap > svg { display: block; width: 100%; height: auto; min-height: 300px; user-select: none; touch-action: none; }
+.lokasi-map__zoom {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid rgba(17, 16, 15, 0.18);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(247, 244, 231, 0.92);
+  box-shadow: 0 8px 22px rgba(17, 16, 15, 0.18);
+  backdrop-filter: blur(8px);
+}
+.lokasi-map__zoom-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #11100f;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.lokasi-map__zoom-btn:hover:not(:disabled) {
+  background: rgba(17, 16, 15, 0.08);
+}
+.lokasi-map__zoom-btn:disabled {
+  color: rgba(17, 16, 15, 0.28);
+  cursor: not-allowed;
+}
+.lokasi-map__zoom-btn + .lokasi-map__zoom-btn {
+  border-top: 1px solid rgba(17, 16, 15, 0.12);
+}
+.lokasi-map__zoom-reset {
+  font-size: 14px;
+}
