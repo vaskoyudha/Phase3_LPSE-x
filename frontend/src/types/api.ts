@@ -74,3 +74,34 @@ export interface DemoState {
   production_build_status: ProductionBuildStatus;
   error?: string | null;
 }
+
+export interface QueueItem {
+  case_id: string;
+  row_id?: string | number;
+  ocid?: string;
+  tender_id?: string;
+  risk_rank: number;
+  archive_rank?: number;
+  split_risk_rank?: number;
+  source_split?: 'train_data' | 'test_data' | string;
+  is_heldout?: boolean;
+  eval_claim_scope?: 'heldout_test_only' | 'archive_browsing_only' | string;
+  package_title: string;
+  buyer: string;
+  supplier: string;
+  tender_value_display: string;
+  procurement_method: string;
+  predicted_label: string;
+  probability: number;
+  risk_priority_score: number;
+  probability_low?: number;
+  probability_medium?: number;
+  probability_high?: number;
+  review_status: string;
+  buyer_region?: string;
+  buyer_region_type?: string;
+  buyer_region_source?: 'derived_from_buyer_name' | string;
+  buyer_region_note?: string;
+  buyer_region_key?: string;
+  region_key?: string;
+}
