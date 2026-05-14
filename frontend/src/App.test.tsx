@@ -17,7 +17,7 @@ import { RiskDistributionChart } from './components/dashboard/RiskDistributionCh
 import { ShapFactorBars } from './components/casebook/ShapFactorBars';
 import { CasebookPage } from './pages/CasebookPage';
 import { ModelTransparencyPage } from './pages/ModelTransparencyPage';
-import type { ArchiveAnalyticsResponse, CasebookPayload, ArchiveBrowserResponse, DemoState, QueueItem, QueueResponse, ReviewListResponse, ReviewRecord } from './types/api';
+import type { ArchiveAnalyticsResponse, CasebookPayload, ArchiveBrowserResponse, DemoState, QueueItem, QueueResponse, ReviewListResponse, ReviewRecord, UploadedPackageScoreResponse } from './types/api';
 
 if (!window.matchMedia) {
   Object.defineProperty(window, 'matchMedia', {
@@ -473,6 +473,71 @@ const archiveAnalyticsResponse: ArchiveAnalyticsResponse = {
   guardrail: demoState.guardrail,
 };
 
+const uploadScoreResponse: UploadedPackageScoreResponse = {
+  upload_id: 'upload-test-1',
+  rows_received: 1,
+  rows_scored: 1,
+  source_split: 'uploaded_csv',
+  eval_claim_scope: 'uploaded_scoring_only',
+  model_artifact: 'model_risk.ubj',
+  model_backend: 'xgboost',
+  feature_source: 'uploaded_csv',
+  raw_source: 'uploaded_csv',
+  no_cloud_call: true,
+  no_live_scraping: true,
+  no_retraining: true,
+  warnings: [],
+  guardrail: demoState.guardrail,
+  inference_status: {
+    upload_id: 'upload-test-1',
+    model_artifact: 'model_risk.ubj',
+    model_backend: 'xgboost',
+    inference_mode: 'offline_local',
+    feature_source: 'uploaded_csv',
+    raw_source: 'uploaded_csv',
+    source_split: 'uploaded_csv',
+    eval_claim_scope: 'uploaded_scoring_only',
+    rows_received: 1,
+    rows_scored: 1,
+    rows_ranked: 1,
+    data_load_latency_ms: 1,
+    feature_latency_ms: 1,
+    model_load_latency_ms: 1,
+    prediction_latency_ms: 1,
+    queue_build_latency_ms: 1,
+    total_latency_ms: 5,
+    no_cloud_call: true,
+    no_live_scraping: true,
+    no_retraining: true,
+    guardrail: demoState.guardrail,
+  },
+  items: [
+    {
+      upload_rank: 1,
+      case_id: 'uploaded_csv:0',
+      row_id: 0,
+      ocid: 'uploaded-1',
+      tender_id: 'UPLOAD-1',
+      risk_rank: 1,
+      source_split: 'uploaded_csv',
+      is_heldout: false,
+      eval_claim_scope: 'uploaded_scoring_only',
+      package_title: 'Pembangunan jalan desa',
+      buyer: 'Dinas PUPR Kabupaten Sleman',
+      supplier: 'PT Maju Jaya',
+      tender_value_display: 'Rp1.500.000.000',
+      procurement_method: 'open',
+      predicted_label: 'Risiko Tinggi',
+      probability: 0.92,
+      risk_priority_score: 0.92,
+      probability_low: 0.02,
+      probability_medium: 0.06,
+      probability_high: 0.92,
+      review_status: 'Prioritas Review',
+    },
+  ],
+};
+
 function jsonResponse(payload: unknown) {
   return new Response(JSON.stringify(payload), { status: 200, headers: { 'Content-Type': 'application/json' } });
 }
@@ -480,8 +545,9 @@ function jsonResponse(payload: unknown) {
 
 
 function installAppFetchMock() {
-  return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+  return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input);
+    if (url.startsWith('/api/uploads/tender-packages') && init?.method === 'POST') return jsonResponse(uploadScoreResponse);
     if (url.startsWith('/api/demo-state')) return jsonResponse(demoState);
     if (url.startsWith('/api/queue')) return jsonResponse(queueResponse);
     if (url.startsWith('/api/archive/analytics')) return jsonResponse(archiveAnalyticsResponse);
@@ -686,6 +752,58 @@ test('Dashboard overview stays summary-only while Archive and Analytics own deep
   expect(screen.queryByText('Tender Archive Explorer')).not.toBeInTheDocument();
   analytics.fetchMock.mockRestore();
   cleanup();
+});
+
+test('Archive page uploads tender CSV and shows uploaded scoring results', async () => {
+  const { fetchMock } = renderAppAt('/dashboard/archive');
+  expect(await screen.findByText('Upload CSV Paket Tender')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Template CSV/i })).toHaveAttribute('href', '/api/uploads/tender-packages/template');
+
+  const file = new File([
+    'tender_title,tender_description,buyer_name,supplier_name,tender_value_amount,award_value_amount,tender_datePublished,tender_procurementMethod,tender_mainProcurementCategory\n',
+    'Pembangunan jalan desa,Paket pekerjaan konstruksi jalan desa,Dinas PUPR Kabupaten Sleman,PT Maju Jaya,1500000000,1480000000,2025-01-15,open,works\n',
+  ], 'paket-tender.csv', { type: 'text/csv' });
+  fireEvent.change(screen.getByLabelText('Pilih CSV paket tender'), { target: { files: [file] } });
+  fireEvent.click(screen.getByRole('button', { name: /Upload & Skor/i }));
+
+  await screen.findByText(/1 baris discore/i);
+  expect(screen.getByText('uploaded_scoring_only')).toBeInTheDocument();
+  expect(screen.getAllByText('uploaded_csv').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Pembangunan jalan desa').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Risiko Tinggi').length).toBeGreaterThan(0);
+  expect(fetchMock).toHaveBeenCalledWith('/api/uploads/tender-packages', expect.objectContaining({
+    method: 'POST',
+    headers: { 'Content-Type': 'text/csv' },
+  }));
+  fetchMock.mockRestore();
+});
+
+test('Archive page scores manual tender input through the upload backend', async () => {
+  const { fetchMock } = renderAppAt('/dashboard/archive');
+  expect(await screen.findByText('Upload CSV Paket Tender')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('tab', { name: 'Input manual' }));
+  fireEvent.change(screen.getByLabelText('Judul tender manual'), { target: { value: 'Pembangunan drainase kota' } });
+  fireEvent.change(screen.getByLabelText('Deskripsi tender manual'), { target: { value: 'Paket konstruksi drainase pusat kota' } });
+  fireEvent.change(screen.getByLabelText('Nama buyer manual'), { target: { value: 'Pemerintah Daerah Kota Bandung' } });
+  fireEvent.change(screen.getByLabelText('Nama supplier manual'), { target: { value: 'CV Tirta Karya' } });
+  fireEvent.change(screen.getByLabelText('Nilai tender manual'), { target: { value: '2400000000' } });
+  fireEvent.change(screen.getByLabelText('Nilai award manual'), { target: { value: '2380000000' } });
+  fireEvent.change(screen.getByLabelText('Tanggal publikasi manual'), { target: { value: '2025-03-20' } });
+  fireEvent.change(screen.getByLabelText('Metode pengadaan manual'), { target: { value: 'open' } });
+  fireEvent.change(screen.getByLabelText('Kategori pengadaan manual'), { target: { value: 'works' } });
+  fireEvent.click(screen.getByRole('button', { name: /Skor Manual/i }));
+
+  await screen.findByText(/1 baris discore/i);
+  expect(fetchMock).toHaveBeenCalledWith('/api/uploads/tender-packages', expect.objectContaining({
+    method: 'POST',
+    headers: { 'Content-Type': 'text/csv' },
+    body: expect.stringContaining('Pembangunan drainase kota'),
+  }));
+  expect(fetchMock).toHaveBeenCalledWith('/api/uploads/tender-packages', expect.objectContaining({
+    body: expect.stringContaining('CV Tirta Karya'),
+  }));
+  fetchMock.mockRestore();
 });
 
 test('Analytics rail resolves high-risk mix across archive distribution key variants', async () => {

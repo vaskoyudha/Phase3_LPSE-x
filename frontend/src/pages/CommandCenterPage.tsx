@@ -14,6 +14,7 @@ import { ScoredDatasetExplorer } from '../components/dashboard/ScoredDatasetExpl
 import { ArchiveAnalyticsPanel } from '../components/dashboard/ArchiveAnalyticsPanel';
 import { LokasiMap } from '../components/dashboard/LokasiMap';
 import { NusantaraAtlasCarousel } from '../components/dashboard/NusantaraAtlasCarousel';
+import { UploadedTenderCsvPanel } from '../components/dashboard/UploadedTenderCsvPanel';
 import dashboardSectionIntroBackground from '../assets/dashboard/dashboard-section-intro-background.jpeg';
 import { useOperatorProfile } from '../data/useOperatorProfile';
 
@@ -377,6 +378,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
           </div>}
           {activeTab === 'analytics' && <ArchiveAnalyticsPanel analytics={archiveAnalytics} loading={archiveAnalyticsLoading} error={archiveAnalyticsError} activeRisk={filters.risk} onRiskFilter={setRiskFromAnalytics} onSelectPoint={selectAnalyticsPoint} monthlyTrends={archiveAnalytics?.monthly_trends ?? dataset?.monthly_risk_trend ?? []} dateRange={dataset?.date_range} />}
           {activeTab === 'overview' && <RiskQueueTable items={visibleItems} selectedId={selected?.case_id} onSelect={onSelect} />}
+          {activeTab === 'archive' && <UploadedTenderCsvPanel />}
           {activeTab === 'archive' && <ScoredDatasetExplorer ref={archiveDetailsRef} dataset={dataset} loading={datasetLoading} error={datasetError} selectedId={selected?.case_id} splitFilter={archiveSplit} sort={archiveSort} searchValue={filters.search} onSplitChange={setArchiveSplit} onSortChange={setArchiveSort} onSearchChange={(search) => { setDatasetPage(1); setFilters((current) => ({ ...current, search })); }} onSelect={selectDatasetRow} onPageChange={setDatasetPage} />}
           {activeTab === 'locations' && <LokasiMap analytics={archiveAnalytics} loading={archiveAnalyticsLoading} selectedRegionKey={selectedRegionKey} onSelectRegion={selectRegion} />}
           {activeTab === 'activity' && <ActivityTimeline dataset={dataset} analytics={archiveAnalytics} selectedRegionKey={selectedRegionKey} filters={filters} archiveSplit={archiveSplit} archiveSort={archiveSort} status={queue.inference_status ?? demoState.inference_status} />}

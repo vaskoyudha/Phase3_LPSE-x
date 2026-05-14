@@ -58,6 +58,30 @@ export interface ArchiveInferenceStatus {
   guardrail: string;
 }
 
+export interface UploadedPackageInferenceStatus {
+  upload_id: string;
+  model_artifact: string;
+  model_backend: string;
+  inference_mode: string;
+  feature_source: string;
+  raw_source: string;
+  source_split: string;
+  eval_claim_scope: string;
+  rows_received: number;
+  rows_scored: number;
+  rows_ranked: number;
+  data_load_latency_ms: number;
+  feature_latency_ms: number;
+  model_load_latency_ms: number;
+  prediction_latency_ms: number;
+  queue_build_latency_ms: number;
+  total_latency_ms: number;
+  no_cloud_call: boolean;
+  no_live_scraping: boolean;
+  no_retraining: boolean;
+  guardrail: string;
+}
+
 export interface DemoState {
   ready: boolean;
   offline_mode: boolean;
@@ -149,6 +173,32 @@ export interface ArchiveRow extends DatasetRow {
   buyer_region_note?: string;
   buyer_region_key?: string;
   region_key?: string;
+}
+
+export interface UploadedPackageItem extends QueueItem {
+  upload_rank: number;
+  source_split: 'uploaded_csv' | string;
+  is_heldout: false;
+  eval_claim_scope: 'uploaded_scoring_only' | string;
+}
+
+export interface UploadedPackageScoreResponse {
+  upload_id: string;
+  rows_received: number;
+  rows_scored: number;
+  source_split: string;
+  eval_claim_scope: string;
+  model_artifact: string;
+  model_backend: string;
+  feature_source: string;
+  raw_source: string;
+  no_cloud_call: boolean;
+  no_live_scraping: boolean;
+  no_retraining: boolean;
+  items: UploadedPackageItem[];
+  warnings: string[];
+  inference_status: UploadedPackageInferenceStatus;
+  guardrail: string;
 }
 
 export interface ArchiveMonthlyRiskTrend {
