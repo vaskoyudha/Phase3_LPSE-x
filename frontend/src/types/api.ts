@@ -186,3 +186,13 @@ export interface ArchiveBrowserResponse {
   display_note: string;
   guardrail: string;
 }
+
+export interface ArchiveAnalyticsFilters {
+  risk: string;
+  split: string;
+  search: string;
+  buyer: string;
+  supplier: string;
+  sort: string;
+  region_key?: string;
+}
