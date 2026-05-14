@@ -38,8 +38,8 @@ def test_demo_dataset_uses_local_test_split_only():
 
     assert dataset.max_rows == 5
     assert len(dataset.features) == len(dataset.raw) == 5
-    assert "test_data/features.parquet" in str(dataset.feature_path)
-    assert "test_data/raw.parquet" in str(dataset.raw_path)
+    assert "test_data/features.parquet" in dataset.feature_path.as_posix()
+    assert "test_data/raw.parquet" in dataset.raw_path.as_posix()
 
 
 def test_prediction_backend_requires_exact_feature_alignment():

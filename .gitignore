@@ -24,6 +24,9 @@ review_data/
 /package-lock.json
 /package.json
 
+# Environment
+.env
+
 # OS/editor
 .DS_Store
 .idea/
