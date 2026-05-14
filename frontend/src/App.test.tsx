@@ -660,3 +660,40 @@ test('Archive analytics separates undetected regions from normal regional concen
   expect(within(regionalPanel).queryByText('Tidak tersedia')).not.toBeInTheDocument();
 });
 
+test('Archive analytics renders one risk composition section and Top Patterns summary', () => {
+  render(<ArchiveAnalyticsPanel analytics={archiveAnalyticsResponse} activeRisk="all" onRiskFilter={() => undefined} onSelectPoint={() => undefined} />);
+
+  expect(screen.getAllByText('Komposisi Risiko')).toHaveLength(1);
+  const summary = screen.getByRole('region', { name: 'Top Patterns' });
+  expect(within(summary).getByText('Matched archive rows')).toBeInTheDocument();
+  expect(within(summary).getByText('465.184')).toBeInTheDocument();
+  expect(within(summary).getByText('High-risk count/share')).toBeInTheDocument();
+  expect(within(summary).getByText(/32\.380.*7/i)).toBeInTheDocument();
+  expect(within(summary).getByText('Top classified region')).toBeInTheDocument();
+  expect(within(summary).getByText('Kota Bandung')).toBeInTheDocument();
+  expect(within(summary).getByText('Top buyer group')).toBeInTheDocument();
+  expect(within(summary).getByText(queueItem.buyer)).toBeInTheDocument();
+  expect(within(summary).getByText('Priority sample count')).toBeInTheDocument();
+  expect(within(summary).getByText('1 dari 500')).toBeInTheDocument();
+});
+
+test('Archive analytics priority shortcuts reveal selected point details and notify parent', () => {
+  const onSelectPoint = vi.fn();
+  render(<ArchiveAnalyticsPanel analytics={archiveAnalyticsResponse} activeRisk="all" onRiskFilter={() => undefined} onSelectPoint={onSelectPoint} />);
+
+  fireEvent.click(screen.getByRole('button', { name: /archive page 3/i }));
+
+  const detail = screen.getByRole('region', { name: 'Selected priority point detail' });
+  expect(detail).toBeInTheDocument();
+  expect(within(detail).getByText(queueItem.package_title)).toBeInTheDocument();
+  expect(within(detail).getByText(queueItem.buyer)).toBeInTheDocument();
+  expect(within(detail).getByText(queueItem.supplier)).toBeInTheDocument();
+  expect(within(detail).getByText('Kabupaten X')).toBeInTheDocument();
+  expect(within(detail).getByText('Risiko Tinggi')).toBeInTheDocument();
+  expect(within(detail).getByText('0.920')).toBeInTheDocument();
+  expect(within(detail).getByText(queueItem.tender_value_display)).toBeInTheDocument();
+  expect(within(detail).getByText('3')).toBeInTheDocument();
+  expect(within(detail).getByRole('button', { name: /Open archive row/i })).toBeInTheDocument();
+  expect(onSelectPoint).toHaveBeenCalledWith(archiveAnalyticsResponse.priority_map[0]);
+});
+
