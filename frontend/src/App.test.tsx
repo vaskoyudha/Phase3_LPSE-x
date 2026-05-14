@@ -697,3 +697,51 @@ test('Archive analytics priority shortcuts reveal selected point details and not
   expect(onSelectPoint).toHaveBeenCalledWith(archiveAnalyticsResponse.priority_map[0]);
 });
 
+test('Archive analytics matrix explains sampled dots and log value axis', () => {
+  render(<ArchiveAnalyticsPanel analytics={archiveAnalyticsResponse} activeRisk="all" onRiskFilter={() => undefined} onSelectPoint={() => undefined} />);
+
+  expect(screen.getByText(/X = risk tier/i)).toBeInTheDocument();
+  expect(screen.getByText(/Y = contract value on log scale/i)).toBeInTheDocument();
+  expect(screen.getByText(/scatter dots are sampled/i)).toBeInTheDocument();
+  expect(screen.getByText(/distribution strip is the true mix/i)).toBeInTheDocument();
+});
+
+test('Dashboard filter panel toggles from the topbar without old status pills', async () => {
+  const { fetchMock } = renderAppAt('/dashboard/overview');
+  await screen.findByText('Ringkasan risiko saat ini');
+
+  const topbar = document.querySelector('.app-topbar') as HTMLElement;
+  expect(topbar).toBeInTheDocument();
+  expect(within(topbar).queryByText('Offline')).not.toBeInTheDocument();
+  expect(within(topbar).queryByText('Single Model')).not.toBeInTheDocument();
+  expect(within(topbar).queryByText('Auditor')).not.toBeInTheDocument();
+  expect(screen.queryByText('Risk level')).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: /Inference status/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('region', { name: /Selected use case/i })).toBeInTheDocument();
+
+  const panelsButton = within(topbar).getByRole('button', { name: /Panels 1 of 1 visible/i });
+  expect(panelsButton).toHaveAttribute('aria-expanded', 'false');
+  fireEvent.click(panelsButton);
+  expect(panelsButton).toHaveAttribute('aria-expanded', 'true');
+
+  const panelsMenu = screen.getByRole('group', { name: 'Dashboard panels' });
+  expect(within(panelsMenu).queryByRole('button', { name: /inference/i })).not.toBeInTheDocument();
+
+  const useCaseButton = within(panelsMenu).getByRole('button', { name: 'Hide use case' });
+  expect(useCaseButton).toHaveAttribute('aria-pressed', 'true');
+  fireEvent.click(useCaseButton);
+  expect(within(panelsMenu).getByRole('button', { name: 'Show use case' })).toHaveAttribute('aria-pressed', 'false');
+  expect(screen.queryByRole('region', { name: /Selected use case/i })).not.toBeInTheDocument();
+  expect(within(topbar).getByRole('button', { name: /Panels 0 of 1 visible/i })).toBeInTheDocument();
+
+  const filterButton = within(topbar).getByRole('button', { name: 'Filters' });
+  expect(filterButton).toHaveAttribute('aria-expanded', 'false');
+  fireEvent.click(filterButton);
+  expect(within(topbar).getByRole('button', { name: 'Hide filters' })).toHaveAttribute('aria-expanded', 'true');
+  expect(screen.getByText('Risk level')).toBeInTheDocument();
+
+  fireEvent.click(within(topbar).getByRole('button', { name: 'Hide filters' }));
+  expect(screen.queryByText('Risk level')).not.toBeInTheDocument();
+  fetchMock.mockRestore();
+});
+
