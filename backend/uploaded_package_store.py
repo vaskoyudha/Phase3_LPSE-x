@@ -165,6 +165,31 @@ class UploadedPackageStore:
                 return None
             return self._run_row_to_dict(row)
 
+    def count_upload_runs(self) -> int:
+        with self._connect() as conn:
+            row = conn.execute("SELECT COUNT(*) FROM upload_runs").fetchone()
+            return int(row[0] if row is not None else 0)
+
+    def count_uploaded_rows(self) -> int:
+        with self._connect() as conn:
+            row = conn.execute("SELECT COUNT(*) FROM uploaded_tender_rows").fetchone()
+            return int(row[0] if row is not None else 0)
+
+    def list_upload_runs(self, limit: int = 5) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM upload_runs ORDER BY created_at DESC, upload_id DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+            return [self._run_row_to_dict(row) for row in rows]
+
+    def get_upload_summary(self, limit: int = 5) -> dict[str, Any]:
+        return {
+            "total_upload_runs": self.count_upload_runs(),
+            "total_rows_stored": self.count_uploaded_rows(),
+            "recent_uploads": self.list_upload_runs(limit=limit),
+        }
+
     def list_uploaded_rows(self, upload_id: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
         query = "SELECT * FROM uploaded_tender_rows"
         params: tuple[Any, ...]

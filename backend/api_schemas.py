@@ -139,6 +139,18 @@ class UploadedPackageInferenceStatus(BaseModel):
     guardrail: str
 
 
+class UploadedPackageRunSummary(BaseModel):
+    upload_id: str
+    rows_received: int
+    rows_scored: int
+    rows_ranked: int
+    source_split: str
+    eval_claim_scope: str
+    model_artifact: str
+    model_backend: str
+    created_at: str
+
+
 class UploadedPackageScoreResponse(BaseModel):
     upload_id: str
     rows_received: int
@@ -155,6 +167,13 @@ class UploadedPackageScoreResponse(BaseModel):
     items: list[dict[str, Any]]
     warnings: list[str]
     inference_status: UploadedPackageInferenceStatus
+    guardrail: str
+
+
+class UploadedPackageStoreSummaryResponse(BaseModel):
+    total_upload_runs: int
+    total_rows_stored: int
+    recent_uploads: list[UploadedPackageRunSummary]
     guardrail: str
 
 

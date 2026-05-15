@@ -40,6 +40,7 @@ from backend.api_schemas import (
     StaticCasebookResponse,
     UploadedPackageInferenceStatus,
     UploadedPackageScoreResponse,
+    UploadedPackageStoreSummaryResponse,
 )
 from src.casebook import DEFAULT_STATIC_CASEBOOK_PATH, build_casebook, render_static_casebook_html
 from src.product_demo import (
@@ -1725,6 +1726,17 @@ def tender_package_upload_template() -> Response:
         content=generate_template_csv(),
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": "attachment; filename=lpse-x-tender-packages-template.csv"},
+    )
+
+
+@app.get("/api/uploads/tender-packages", response_model=UploadedPackageStoreSummaryResponse)
+def tender_package_upload_summary(limit: int = Query(default=5, ge=1, le=20)) -> UploadedPackageStoreSummaryResponse:
+    summary = _uploaded_package_store(str(UPLOAD_DB_PATH)).get_upload_summary(limit=limit)
+    return UploadedPackageStoreSummaryResponse(
+        total_upload_runs=int(summary["total_upload_runs"]),
+        total_rows_stored=int(summary["total_rows_stored"]),
+        recent_uploads=summary["recent_uploads"],
+        guardrail=SAFE_GUARDRAIL_ID,
     )
 
 

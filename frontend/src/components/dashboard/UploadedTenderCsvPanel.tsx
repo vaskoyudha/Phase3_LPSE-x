@@ -1,7 +1,7 @@
-import { useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { CheckCircle, DownloadSimple, FileCsv, UploadSimple, WarningCircle } from '@phosphor-icons/react';
 import { api } from '../../api/client';
-import type { UploadedPackageItem, UploadedPackageScoreResponse } from '../../types/api';
+import type { UploadedPackageItem, UploadedPackageScoreResponse, UploadedPackageStoreSummaryResponse } from '../../types/api';
 
 type EntryMode = 'csv' | 'manual';
 
@@ -47,8 +47,13 @@ export function UploadedTenderCsvPanel() {
   const [file, setFile] = useState<File | null>(null);
   const [manualForm, setManualForm] = useState<ManualTenderForm>(manualTenderDefaults);
   const [result, setResult] = useState<UploadedPackageScoreResponse | null>(null);
+  const [summary, setSummary] = useState<UploadedPackageStoreSummaryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    void refreshSummary();
+  }, []);
 
   async function submitUpload() {
     if (!file) {
@@ -60,6 +65,7 @@ export function UploadedTenderCsvPanel() {
     try {
       const payload = await api.uploadTenderPackages(file);
       setResult(payload);
+      await refreshSummary();
     } catch (exc) {
       setResult(null);
       setError(exc instanceof Error ? exc.message : 'Upload CSV gagal.');
@@ -79,6 +85,7 @@ export function UploadedTenderCsvPanel() {
     try {
       const payload = await api.scoreTenderPackageCsv(manualTenderToCsv(manualForm));
       setResult(payload);
+      await refreshSummary();
     } catch (exc) {
       setResult(null);
       setError(exc instanceof Error ? exc.message : 'Input manual gagal discore.');
@@ -90,6 +97,14 @@ export function UploadedTenderCsvPanel() {
   function updateManualField(field: keyof ManualTenderForm, value: string) {
     setManualForm((current) => ({ ...current, [field]: value }));
     setError(null);
+  }
+
+  async function refreshSummary() {
+    try {
+      setSummary(await api.uploadedTenderPackageSummary());
+    } catch {
+      setSummary(null);
+    }
   }
 
   const rows = result?.items ?? [];
@@ -207,11 +222,12 @@ export function UploadedTenderCsvPanel() {
 
       {result && (
         <div style={styles.resultShell}>
-          <div style={styles.resultHeader}>
-            <span style={styles.successPill}><CheckCircle size={16} /> {result.rows_scored.toLocaleString('id-ID')} baris discore</span>
-            <span style={styles.metaPill}>{result.model_artifact}</span>
-            <span style={styles.metaPill}>{result.eval_claim_scope}</span>
-          </div>
+        <div style={styles.resultHeader}>
+          <span style={styles.successPill}><CheckCircle size={16} /> {result.rows_scored.toLocaleString('id-ID')} baris discore</span>
+          <span style={styles.metaPill}>{result.model_artifact}</span>
+          <span style={styles.metaPill}>{result.eval_claim_scope}</span>
+          {summary && <span style={styles.metaPill}>{summary.total_rows_stored.toLocaleString('id-ID')} baris tersimpan dalam {summary.total_upload_runs.toLocaleString('id-ID')} upload</span>}
+        </div>
           <div style={styles.resultTableFrame}>
             <table style={styles.table}>
               <thead>

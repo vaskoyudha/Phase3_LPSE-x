@@ -82,6 +82,18 @@ export interface UploadedPackageInferenceStatus {
   guardrail: string;
 }
 
+export interface UploadedPackageRunSummary {
+  upload_id: string;
+  rows_received: number;
+  rows_scored: number;
+  rows_ranked: number;
+  source_split: string;
+  eval_claim_scope: string;
+  model_artifact: string;
+  model_backend: string;
+  created_at: string;
+}
+
 export interface DemoState {
   ready: boolean;
   offline_mode: boolean;
@@ -198,6 +210,13 @@ export interface UploadedPackageScoreResponse {
   items: UploadedPackageItem[];
   warnings: string[];
   inference_status: UploadedPackageInferenceStatus;
+  guardrail: string;
+}
+
+export interface UploadedPackageStoreSummaryResponse {
+  total_upload_runs: number;
+  total_rows_stored: number;
+  recent_uploads: UploadedPackageRunSummary[];
   guardrail: string;
 }
 

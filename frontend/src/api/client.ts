@@ -1,4 +1,4 @@
-import type { ArchiveAnalyticsResponse, ArchiveBrowserResponse, CasebookPayload, DatasetBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewListResponse, ReviewRecord, ReviewUpdateRequest, UploadedPackageScoreResponse } from '../types/api';
+import type { ArchiveAnalyticsResponse, ArchiveBrowserResponse, CasebookPayload, DatasetBrowserResponse, DemoState, InferenceStatus, QueueResponse, ReviewListResponse, ReviewRecord, ReviewUpdateRequest, UploadedPackageScoreResponse, UploadedPackageStoreSummaryResponse } from '../types/api';
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -80,5 +80,6 @@ export const api = {
   exportUrl: (caseId: string) => `/api/casebook/${encodeURIComponent(caseId)}/export.html`,
   uploadTenderPackages: (file: File) => uploadCsv<UploadedPackageScoreResponse>('/api/uploads/tender-packages', file),
   scoreTenderPackageCsv: (csvText: string) => postCsv<UploadedPackageScoreResponse>('/api/uploads/tender-packages', csvText),
+  uploadedTenderPackageSummary: (limit = 5) => getJson<UploadedPackageStoreSummaryResponse>(`/api/uploads/tender-packages?limit=${limit}`),
   tenderPackageTemplateUrl: () => '/api/uploads/tender-packages/template',
 };
