@@ -28,7 +28,18 @@ bukan tuduhan pelanggaran, bukti korupsi, atau keputusan hukum final.
 - Test suite untuk kontrak API, frontend contract, smoke test, dan guardrail
   copy.
 
-## Arsitektur Tingkat Tinggi
+## Sponsor dan Penyelenggara
+
+Logo berikut mengikuti sponsor yang tampil di sidebar website:
+
+| Sponsor | Logo |
+| --- | --- |
+| Ai Connect | <img src="frontend/src/assets/brand/AiConnect.png" alt="Ai Connect" width="120" /> |
+| FIND IT | <img src="frontend/src/assets/brand/FINDIT.png" alt="FIND IT" width="120" /> |
+| DTETI | <img src="frontend/src/assets/brand/DTETI.png" alt="DTETI" width="120" /> |
+| Universitas Gadjah Mada | <img src="frontend/src/assets/brand/ugm.png" alt="Universitas Gadjah Mada" width="120" /> |
+
+## Arsitektur Tingkat High-level
 
 ```text
 model/data lokal -> src/ pipeline inference -> backend.api -> frontend
