@@ -39,7 +39,7 @@ Logo berikut mengikuti sponsor yang tampil di sidebar website:
 | DTETI | <img src="frontend/src/assets/brand/DTETI.png" alt="DTETI" width="120" /> |
 | Universitas Gadjah Mada | <img src="frontend/src/assets/brand/ugm.png" alt="Universitas Gadjah Mada" width="120" /> |
 
-## Arsitektur Tingkat High-level
+## Arsitektur Tingkat Tinggi
 
 ```text
 model/data lokal -> src/ pipeline inference -> backend.api -> frontend
