@@ -224,6 +224,73 @@ def _load_archive_runtime_from_disk() -> tuple[Any, pd.DataFrame, ArchiveInferen
     queue = pd.read_parquet(ARCHIVE_QUEUE_CACHE_PATH)
     return None, queue, metadata
 
+def _uploaded_archive_rows() -> pd.DataFrame:
+    store = _uploaded_package_store(str(UPLOAD_DB_PATH))
+    rows = store.list_uploaded_rows(limit=None)
+    if not rows:
+        return pd.DataFrame()
+    records: list[dict[str, Any]] = []
+    for row in rows:
+        payload = dict(row.get("payload") or {})
+        upload_rank = int(row.get("upload_rank") or len(records) + 1)
+        case_id = str(row.get("case_id") or payload.get("case_id") or f"uploaded-{upload_rank}")
+        record = {
+            **payload,
+            "archive_id": f"uploaded:{row.get('upload_id')}:{upload_rank}",
+            "archive_rank": 1_000_000_000 + int(row.get("id") or upload_rank),
+            "split_risk_rank": upload_rank,
+            "case_id": case_id,
+            "row_id": row.get("row_id"),
+            "source_split": "uploaded_csv",
+            "is_heldout": False,
+            "eval_claim_scope": "uploaded_scoring_only",
+            "ocid": str(payload.get("ocid") or case_id),
+            "tender_id": str(payload.get("tender_id") or case_id),
+            "package_title": str(row.get("package_title") or payload.get("package_title") or ""),
+            "buyer": str(row.get("buyer") or payload.get("buyer") or ""),
+            "supplier": str(row.get("supplier") or payload.get("supplier") or ""),
+            "tender_value": row.get("tender_value"),
+            "tender_value_display": payload.get("tender_value_display"),
+            "procurement_method": str(payload.get("procurement_method") or ""),
+            "category": str(payload.get("category") or ""),
+            "status": str(payload.get("status") or ""),
+            "date_published": payload.get("date_published"),
+            "predicted_label": str(row.get("predicted_label") or payload.get("predicted_label") or ""),
+            "probability": payload.get("probability", row.get("risk_priority_score")),
+            "risk_priority_score": row.get("risk_priority_score"),
+            "probability_low": payload.get("probability_low"),
+            "probability_medium": payload.get("probability_medium"),
+            "probability_high": payload.get("probability_high"),
+            "review_status": str(payload.get("review_status") or DEFAULT_REVIEW_STATUS),
+            "buyer_region": payload.get("buyer_region"),
+            "buyer_region_type": payload.get("buyer_region_type"),
+            "buyer_region_source": payload.get("buyer_region_source"),
+            "buyer_region_note": payload.get("buyer_region_note"),
+            "buyer_region_key": payload.get("buyer_region_key"),
+            "upload_id": row.get("upload_id"),
+            "uploaded_at": row.get("created_at"),
+        }
+        records.append(record)
+    return pd.DataFrame.from_records(records)
+
+def _archive_runtime_with_uploads() -> tuple[Any, pd.DataFrame, ArchiveInferenceMetadata]:
+    dataset, queue, metadata = _archive_runtime_or_http_error()
+    uploaded = _uploaded_archive_rows()
+    if uploaded.empty:
+        return dataset, queue, metadata
+    combined = pd.concat([queue, uploaded], ignore_index=True, sort=False)
+    combined = _prepare_archive_runtime_queue(_hydrate_tender_value_display(combined))
+    combined_metadata = replace(
+        metadata,
+        archive_scope=f"{metadata.archive_scope} + uploaded_csv",
+        rows_scored=int(len(combined)),
+        rows_ranked=int(len(combined)),
+        feature_sources=[*metadata.feature_sources, "uploaded_csv"],
+        raw_sources=[*metadata.raw_sources, "uploaded_csv"],
+        source_splits=[*metadata.source_splits, "uploaded_csv"],
+    )
+    return dataset, combined, combined_metadata
+
 
 def _prepare_archive_runtime_queue(queue: pd.DataFrame) -> pd.DataFrame:
     prepared = queue.copy()
@@ -543,6 +610,8 @@ def _filter_archive_rows(
         filtered = filtered[filtered["source_split"].astype(str) == "test_data"]
     elif normalized_split in {"train_data", "train", "training", "archive_browsing_only"}:
         filtered = filtered[filtered["source_split"].astype(str) == "train_data"]
+    elif normalized_split in {"uploaded_csv", "uploaded", "upload", "uploaded_scoring_only"}:
+        filtered = filtered[filtered["source_split"].astype(str) == "uploaded_csv"]
     elif normalized_split not in {"", "all"}:
         filtered = filtered.iloc[0:0]
 
@@ -667,6 +736,7 @@ def _archive_columns(queue: pd.DataFrame) -> list[str]:
         "split_risk_rank",
         "archive_id",
         "case_id",
+        "upload_id",
         "row_id",
         "source_split",
         "is_heldout",
@@ -686,6 +756,7 @@ def _archive_columns(queue: pd.DataFrame) -> list[str]:
         "category",
         "status",
         "date_published",
+        "uploaded_at",
         "predicted_label",
         "probability",
         "risk_priority_score",
@@ -708,10 +779,14 @@ def _label_distribution(queue: pd.DataFrame) -> dict[str, int]:
 
 def _split_distribution(queue: pd.DataFrame) -> dict[str, int]:
     splits = queue.get("source_split", pd.Series(dtype=str)).value_counts()
-    return {
+    result = {
         "train_data": int(splits.get("train_data", 0)),
         "test_data": int(splits.get("test_data", 0)),
     }
+    uploaded_count = int(splits.get("uploaded_csv", 0))
+    if uploaded_count:
+        result["uploaded_csv"] = uploaded_count
+    return result
 
 
 def _analytics_risk_color(label: str) -> str:
@@ -1148,7 +1223,7 @@ def _build_archive_analytics_response(
     region_key: str,
     sort: str,
 ) -> ArchiveAnalyticsResponse:
-    _, archive_queue, metadata = _archive_runtime_or_http_error()
+    _, archive_queue, metadata = _archive_runtime_with_uploads()
     normalized_region_key = _normalize_region_filter_key(region_key)
     filtered = _filter_archive_rows(
         archive_queue,
@@ -1519,8 +1594,8 @@ def archive_endpoint(
     region_key: str = "",
     sort: str = Query(default="risk_desc", pattern="^(risk_desc|date_desc|value_desc)$"),
 ) -> ArchiveBrowserResponse:
-    """Return a paginated, split-labeled browser over train_data + test_data."""
-    _, archive_queue, metadata = _archive_runtime_or_http_error()
+    """Return a paginated, split-labeled browser over train_data + test_data + uploaded_csv."""
+    _, archive_queue, metadata = _archive_runtime_with_uploads()
     filtered = _filter_archive_rows(
         archive_queue,
         risk=risk,
@@ -1746,6 +1821,8 @@ async def upload_tender_packages(request: Request) -> UploadedPackageScoreRespon
     try:
         result = build_uploaded_package_scores(payload)
         _uploaded_package_store(str(UPLOAD_DB_PATH)).save_upload_result(result)
+        with _ARCHIVE_ANALYTICS_RESPONSE_LOCK:
+            _ARCHIVE_ANALYTICS_RESPONSE_CACHE.clear()
         return _uploaded_package_response(result)
     except UploadedPackageValidationError as exc:
         detail = dict(exc.detail)

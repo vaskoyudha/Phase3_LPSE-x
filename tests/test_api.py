@@ -524,6 +524,27 @@ def test_upload_tender_packages_summary_reflects_persisted_total(tmp_path, monke
     assert payload["recent_uploads"][0]["source_split"] == "uploaded_csv"
     assert payload["guardrail"].startswith("Output LPSE-X")
 
+def test_archive_endpoint_includes_uploaded_csv_rows(tmp_path, monkeypatch):
+    db_path = tmp_path / "uploaded_tenders.sqlite3"
+    monkeypatch.setattr(api_module, "UPLOAD_DB_PATH", db_path)
+
+    response = client.post(
+        "/api/uploads/tender-packages",
+        content=VALID_UPLOAD_CSV.encode("utf-8"),
+        headers={"content-type": "text/csv"},
+    )
+    assert response.status_code == 200
+
+    archive = client.get("/api/archive?split=uploaded_csv&page=1&page_size=10")
+    assert archive.status_code == 200
+    payload = archive.json()
+
+    assert payload["matched_count"] == 2
+    assert payload["split_distribution"]["uploaded_csv"] == 2
+    assert payload["total_rows"] >= payload["matched_count"]
+    assert all(item["source_split"] == "uploaded_csv" for item in payload["items"])
+    assert all(item["upload_id"] for item in payload["items"])
+
 def test_upload_tender_packages_rejects_missing_required_column():
     csv_text = VALID_UPLOAD_CSV.replace("supplier_name,", "")
     response = client.post(

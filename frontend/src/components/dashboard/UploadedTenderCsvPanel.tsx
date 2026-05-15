@@ -41,7 +41,11 @@ const manualTenderColumns = [
   'tender_mainProcurementCategory',
 ];
 
-export function UploadedTenderCsvPanel() {
+type Props = {
+  onUploaded?: () => void;
+};
+
+export function UploadedTenderCsvPanel({ onUploaded }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [mode, setMode] = useState<EntryMode>('csv');
   const [file, setFile] = useState<File | null>(null);
@@ -66,6 +70,7 @@ export function UploadedTenderCsvPanel() {
       const payload = await api.uploadTenderPackages(file);
       setResult(payload);
       await refreshSummary();
+      onUploaded?.();
     } catch (exc) {
       setResult(null);
       setError(exc instanceof Error ? exc.message : 'Upload CSV gagal.');
@@ -86,6 +91,7 @@ export function UploadedTenderCsvPanel() {
       const payload = await api.scoreTenderPackageCsv(manualTenderToCsv(manualForm));
       setResult(payload);
       await refreshSummary();
+      onUploaded?.();
     } catch (exc) {
       setResult(null);
       setError(exc instanceof Error ? exc.message : 'Input manual gagal discore.');

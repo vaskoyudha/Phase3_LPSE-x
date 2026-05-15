@@ -206,6 +206,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
   const [archiveAnalyticsError, setArchiveAnalyticsError] = useState<string | null>(null);
   const [datasetSelectedRow, setDatasetSelectedRow] = useState<ArchiveRow | null>(null);
   const [selectedRegionKey, setSelectedRegionKey] = useState(initialQueryState.selectedRegionKey);
+  const [archiveRefreshTick, setArchiveRefreshTick] = useState(0);
   const archiveDetailsRef = useRef<HTMLElement | null>(null);
 
   const buyers = useMemo(() => unique([...queue.items, ...(dataset?.items ?? [])].map((item) => item.buyer)), [dataset?.items, queue.items]);
@@ -249,7 +250,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
     syncQueryValue(query, 'page', String(datasetPage), '1');
     const nextUrl = `${window.location.pathname}${query.toString() ? `?${query}` : ''}`;
     if (nextUrl !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, '', nextUrl);
-  }, [archiveSort, archiveSplit, datasetPage, filters.buyer, filters.risk, filters.search, filters.supplier, selectedRegionKey]);
+  }, [archiveRefreshTick, archiveSort, archiveSplit, datasetPage, filters.buyer, filters.risk, filters.search, filters.supplier, selectedRegionKey]);
 
   useEffect(() => {
     if (selected && selected.case_id !== selectedId) onSelect(selected.case_id);
@@ -299,7 +300,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
         if (alive) setArchiveAnalyticsLoading(false);
       });
     return () => { alive = false; };
-  }, [archiveSort, archiveSplit, filters.buyer, filters.risk, filters.search, filters.supplier, selectedRegionKey]);
+  }, [archiveRefreshTick, archiveSort, archiveSplit, filters.buyer, filters.risk, filters.search, filters.supplier, selectedRegionKey]);
 
   useEffect(() => {
     if (!datasetSelectedRow || !dataset?.items.length) return;
@@ -379,7 +380,7 @@ export function CommandCenterPage({ demoState, queue, selectedId, activeTab = 'o
           </div>}
           {activeTab === 'analytics' && <ArchiveAnalyticsPanel analytics={archiveAnalytics} loading={archiveAnalyticsLoading} error={archiveAnalyticsError} activeRisk={filters.risk} onRiskFilter={setRiskFromAnalytics} onSelectPoint={selectAnalyticsPoint} monthlyTrends={archiveAnalytics?.monthly_trends ?? dataset?.monthly_risk_trend ?? []} dateRange={dataset?.date_range} />}
           {activeTab === 'overview' && <RiskQueueTable items={visibleItems} selectedId={selected?.case_id} onSelect={onSelect} />}
-          {activeTab === 'archive' && <UploadedTenderCsvPanel />}
+          {activeTab === 'archive' && <UploadedTenderCsvPanel onUploaded={() => setArchiveRefreshTick((current) => current + 1)} />}
           {activeTab === 'archive' && <ScoredDatasetExplorer ref={archiveDetailsRef} dataset={dataset} loading={datasetLoading} error={datasetError} selectedId={selected?.case_id} splitFilter={archiveSplit} sort={archiveSort} searchValue={filters.search} onSplitChange={setArchiveSplit} onSortChange={setArchiveSort} onSearchChange={(search) => { setDatasetPage(1); setFilters((current) => ({ ...current, search })); }} onSelect={selectDatasetRow} onPageChange={setDatasetPage} />}
           {activeTab === 'locations' && <LokasiMap analytics={archiveAnalytics} loading={archiveAnalyticsLoading} selectedRegionKey={selectedRegionKey} onSelectRegion={selectRegion} />}
           {activeTab === 'activity' && <ActivityTimeline dataset={dataset} analytics={archiveAnalytics} selectedRegionKey={selectedRegionKey} filters={filters} archiveSplit={archiveSplit} archiveSort={archiveSort} status={queue.inference_status ?? demoState.inference_status} />}

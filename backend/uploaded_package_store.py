@@ -190,15 +190,17 @@ class UploadedPackageStore:
             "recent_uploads": self.list_upload_runs(limit=limit),
         }
 
-    def list_uploaded_rows(self, upload_id: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+    def list_uploaded_rows(self, upload_id: str | None = None, limit: int | None = 100) -> list[dict[str, Any]]:
         query = "SELECT * FROM uploaded_tender_rows"
         params: tuple[Any, ...]
         if upload_id:
             query += " WHERE upload_id = ?"
-            params = (upload_id, limit)
+            params = (upload_id,) if limit is None else (upload_id, limit)
         else:
-            params = (limit,)
-        query += " ORDER BY id DESC, upload_rank ASC LIMIT ?"
+            params = tuple() if limit is None else (limit,)
+        query += " ORDER BY id DESC, upload_rank ASC"
+        if limit is not None:
+            query += " LIMIT ?"
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
             return [self._row_to_dict(row) for row in rows]
