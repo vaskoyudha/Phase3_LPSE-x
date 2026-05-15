@@ -1,9 +1,9 @@
 """Pytest bootstrap.
 
-Adds the product repo root to `sys.path` so `from src.api import app` works.
+Adds the product repo root to `sys.path` so `from backend.api import app` works.
 The product `src/__init__.py` extends its package `__path__` to include the
 ML-only sibling repo's `src/` directory, which lets tests import both
-product-owned modules (`src.api`, `src.api_schemas`, `src.reviews`) and ML
+product-owned modules (`backend.api`, `backend.api_schemas`, `backend.reviews`) and ML
 primitives (`src.product_demo`, `src.casebook`, ...) under one package name.
 
 Override the ML repo location with `LPSEX_ML_REPO` if needed.

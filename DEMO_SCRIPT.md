@@ -16,7 +16,7 @@ cd frontend
 npm ci
 npm run build
 cd ..
-uvicorn src.api:app --host 127.0.0.1 --port 8000
+uvicorn backend.api:app --host 127.0.0.1 --port 8000
 # buka http://127.0.0.1:8000/?demo=1
 ```
 
@@ -73,7 +73,7 @@ Buka `demo_casebook.html` di browser. Jelaskan tiga bagian utama:
 ## 90-second modern web path
 
 1. Build the React command center: `cd frontend && npm ci && npm run build`.
-2. Start FastAPI locally: `.venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8000`.
+2. Start FastAPI locally: `.venv/bin/uvicorn backend.api:app --host 127.0.0.1 --port 8000`.
 3. Open `http://127.0.0.1:8000/?demo=1` and show Offline / Single Model / Human Review guardrails.
 4. Click `Open Command Center`; point to the **Inference Status** card: full split scored locally, Top 50 shown for reviewer focus.
 5. Scroll to **Scored Dataset Explorer** and explain that the website is connected to the full scored local dataset through paginated API pages, not a static sample.

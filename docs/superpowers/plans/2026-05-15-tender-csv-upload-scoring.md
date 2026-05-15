@@ -631,7 +631,7 @@ Run:
 
 ```bash
 python - <<'PY'
-from src.api_schemas import UploadedPackageInferenceStatus, UploadedPackageScoreResponse
+from backend.api_schemas import UploadedPackageInferenceStatus, UploadedPackageScoreResponse
 print(UploadedPackageInferenceStatus.__name__)
 print(UploadedPackageScoreResponse.__name__)
 PY
@@ -742,7 +742,7 @@ Add these imports near the existing imports in `src/api.py`:
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 ```
 
-Add these schema imports from `src.api_schemas`:
+Add these schema imports from `backend.api_schemas`:
 
 ```python
     UploadedPackageInferenceStatus,

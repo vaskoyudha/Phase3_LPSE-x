@@ -15,19 +15,19 @@ build-frontend:
 	cd frontend && npm run build
 
 run-api:
-	$(UVICORN) src.api:app --host 127.0.0.1 --port 8000
+	$(UVICORN) backend.api:app --host 127.0.0.1 --port 8000
 
 inference-smoke:
 	PYTHONPATH=. $(PYTHON) scripts/inference_smoke.py
 
 verify-python:
-	$(PYTHON) -m compileall src tests
+	$(PYTHON) -m compileall src backend tests
 	$(PYTHON) -m pytest
 
 verify-frontend:
 	cd frontend && npm run typecheck && npm run lint && npm run test && npm run build
 
 guardrail-audit:
-	! grep -RniI --exclude-dir=__pycache__ --exclude-dir=node_modules --exclude-dir=dist --exclude=package-lock.json --exclude-dir=.git -E "terbukti[[:space:]-]+fraud|terbukti[[:space:]-]+korupsi|fraud[[:space:]-]+final|legal[[:space:]-]+verdict|confirmed[[:space:]-]+corruption|putusan[[:space:]-]+hukum" src frontend README.md DEMO_SCRIPT.md demo_casebook.html tests docs
+	! grep -RniI --exclude-dir=__pycache__ --exclude-dir=node_modules --exclude-dir=dist --exclude=package-lock.json --exclude-dir=.git -E "terbukti[[:space:]-]+fraud|terbukti[[:space:]-]+korupsi|fraud[[:space:]-]+final|legal[[:space:]-]+verdict|confirmed[[:space:]-]+corruption|putusan[[:space:]-]+hukum" src backend frontend README.md DEMO_SCRIPT.md demo_casebook.html tests docs
 
 verify: verify-python verify-frontend inference-smoke guardrail-audit

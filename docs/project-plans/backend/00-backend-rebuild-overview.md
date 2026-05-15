@@ -137,7 +137,7 @@ Expected:
 Commands:
 
 ```bash
-uvicorn src.api:app --host 127.0.0.1 --port 8000
+uvicorn backend.api:app --host 127.0.0.1 --port 8000
 curl -fsS http://127.0.0.1:8000/api/demo-state
 curl -fsS http://127.0.0.1:8000/api/inference-status
 curl -fsS 'http://127.0.0.1:8000/api/queue?demo=1&top_n=50'

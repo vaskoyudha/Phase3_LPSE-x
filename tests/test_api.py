@@ -4,8 +4,10 @@ import re
 import pandas as pd
 from fastapi.testclient import TestClient
 
-from src.api import app
+from backend.api import app
+import backend.api as api_module
 from src.product_demo import DEFAULT_FEATURES_PATH
+from backend.uploaded_package_store import UploadedPackageStore
 
 client = TestClient(app)
 EXPECTED_HELD_OUT_ROWS = 93034
@@ -466,6 +468,32 @@ def test_upload_tender_packages_scores_uploaded_csv_without_retraining():
     assert payload["items"][0]["eval_claim_scope"] == "uploaded_scoring_only"
     assert payload["items"][0]["is_heldout"] is False
     assert "bukan tuduhan pelanggaran" in payload["guardrail"]
+
+def test_upload_tender_packages_persists_scored_rows_to_local_database(tmp_path, monkeypatch):
+    db_path = tmp_path / "uploaded_tenders.sqlite3"
+    monkeypatch.setattr(api_module, "UPLOAD_DB_PATH", db_path)
+
+    response = client.post(
+        "/api/uploads/tender-packages",
+        content=VALID_UPLOAD_CSV.encode("utf-8"),
+        headers={"content-type": "text/csv"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert db_path.is_file()
+
+    store = UploadedPackageStore(db_path)
+    run = store.get_upload_run(payload["upload_id"])
+    rows = store.list_uploaded_rows(payload["upload_id"])
+
+    assert run is not None
+    assert run["upload_id"] == payload["upload_id"]
+    assert run["rows_scored"] == 2
+    assert len(rows) == 2
+    assert {row["upload_id"] for row in rows} == {payload["upload_id"]}
+    assert {row["source_split"] for row in rows} == {"uploaded_csv"}
+    assert {row["payload"]["case_id"] for row in rows} == {item["case_id"] for item in payload["items"]}
 
 def test_upload_tender_packages_rejects_missing_required_column():
     csv_text = VALID_UPLOAD_CSV.replace("supplier_name,", "")

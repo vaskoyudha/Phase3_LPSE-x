@@ -4,7 +4,7 @@
 
 **Goal:** Recreate the FastAPI backend service around the ML runtime primitives. The service must expose bounded, judge-safe APIs for demo state, inference status, risk queue, dataset browsing, archive browsing, archive analytics, casebook export, reviews, and static React serving.
 
-**Architecture:** Person 2 imports Person 1 primitives from `src.product_demo` and Person 3 primitives from `src.casebook` / `src.reviews`. Their job is API orchestration, response shaping, caching, pagination, filters, HTTP error handling, and SPA serving.
+**Architecture:** Person 2 imports Person 1 primitives from `src.product_demo` and Person 3 primitives from `src.casebook` / `backend.reviews`. Their job is API orchestration, response shaping, caching, pagination, filters, HTTP error handling, and SPA serving.
 
 **Tech stack:** FastAPI, Pydantic, pandas, numpy, functools `lru_cache`, threading for optional prewarm, pytest + FastAPI TestClient.
 
@@ -267,7 +267,7 @@ Run:
 ```bash
 python -m compileall src/api.py src/api_schemas.py
 pytest tests/test_api.py tests/test_fastapi_static_bundle.py tests/test_frontend_contract.py
-uvicorn src.api:app --host 127.0.0.1 --port 8000
+uvicorn backend.api:app --host 127.0.0.1 --port 8000
 ```
 
 Manual smoke:

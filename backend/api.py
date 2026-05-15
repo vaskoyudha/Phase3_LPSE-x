@@ -24,7 +24,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from src.api_schemas import (
+from backend.api_schemas import (
     ArchiveAnalyticsResponse,
     ArchiveBrowserResponse,
     ArchiveInferenceStatus,
@@ -52,7 +52,8 @@ from src.product_demo import (
     format_currency,
     normalize_region_key,
 )
-from src.reviews import DEFAULT_REVIEW_STATUS, REVIEW_STATUSES, ReviewStore, utc_now_iso
+from backend.reviews import DEFAULT_REVIEW_STATUS, REVIEW_STATUSES, ReviewStore, utc_now_iso
+from backend.uploaded_package_store import UploadedPackageStore
 from src.uploaded_packages import (
     UploadedPackageValidationError,
     build_uploaded_package_scores,
@@ -82,6 +83,7 @@ ARCHIVE_RUNTIME_CACHE_DIR = PROJECT_ROOT / ".omx" / "runtime"
 ARCHIVE_QUEUE_CACHE_PATH = ARCHIVE_RUNTIME_CACHE_DIR / "archive_queue.parquet"
 ARCHIVE_METADATA_CACHE_PATH = ARCHIVE_RUNTIME_CACHE_DIR / "archive_metadata.json"
 REVIEW_DB_PATH = PROJECT_ROOT / "review_data" / "reviews.sqlite3"
+UPLOAD_DB_PATH = PROJECT_ROOT / "upload_data" / "uploaded_tenders.sqlite3"
 REGION_MAP_ASSET_PATH = PROJECT_ROOT / "frontend" / "src" / "assets" / "maps" / "indonesia-kabupaten-kota.geojson"
 REGION_MAP_ATTRIBUTION_PATH = PROJECT_ROOT / "docs" / "indonesia-kabupaten-kota-geojson-attribution.md"
 REGION_MAP_SOURCE_URL = (
@@ -96,6 +98,10 @@ _ARCHIVE_RUNTIME_LOCK = Lock()
 _ARCHIVE_RUNTIME_CACHE: tuple[Any, pd.DataFrame, ArchiveInferenceMetadata] | None = None
 _ARCHIVE_ANALYTICS_RESPONSE_LOCK = Lock()
 _ARCHIVE_ANALYTICS_RESPONSE_CACHE: dict[tuple[str, str, str, str, str, str, str], ArchiveAnalyticsResponse] = {}
+
+@lru_cache(maxsize=8)
+def _uploaded_package_store(db_path: str) -> UploadedPackageStore:
+    return UploadedPackageStore(db_path)
 
 
 def _frontend_index() -> Path:
@@ -1727,6 +1733,7 @@ async def upload_tender_packages(request: Request) -> UploadedPackageScoreRespon
     payload = await request.body()
     try:
         result = build_uploaded_package_scores(payload)
+        _uploaded_package_store(str(UPLOAD_DB_PATH)).save_upload_result(result)
         return _uploaded_package_response(result)
     except UploadedPackageValidationError as exc:
         detail = dict(exc.detail)

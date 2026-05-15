@@ -217,7 +217,7 @@ export function ArchiveAnalyticsPanel({ analytics, loading = false, error = null
                     <button key={point.archive_id} type="button" style={styles.top5Row} onClick={() => handleSelectPoint(point)}>
                       <span style={styles.top5Rank}>{index + 1}</span>
                       <span style={{ minWidth: 0, flex: 1 }}>
-                        <strong style={{ display: 'block', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{point.case_id?.slice(0, 18) ?? point.title.slice(0, 18)}</strong>
+                        <strong style={styles.top5Title}>{point.case_id ?? point.title}</strong>
                         <small style={{ color: 'var(--lp-muted)', fontSize: 10 }}>{compactCurrency(point.contract_value)}</small>
                       </span>
                       <span style={{ padding: '2px 6px', borderRadius: 999, fontSize: 9, fontWeight: 780, color: tier.color, background: tier.glow, border: `1px solid ${tier.color}44` }}>{tier.short}</span>
@@ -673,6 +673,7 @@ const styles: Record<string, CSSProperties> = {
   top5List: { padding: 14, border: '1px solid rgba(215,209,176,.14)', borderRadius: 'var(--lp-radius-md)', background: 'var(--lp-panel)', display: 'grid', gap: 6, alignContent: 'start' },
   top5Row: { display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left' as const, padding: '7px 9px', borderRadius: 14, color: 'var(--lp-text-soft)', cursor: 'pointer', border: '1px solid rgba(255,255,255,.06)', background: 'rgba(255,255,255,.03)', transition: 'background .15s' },
   top5Rank: { width: 20, height: 20, display: 'grid', placeItems: 'center', borderRadius: 999, fontSize: 10, fontWeight: 820, color: 'var(--lp-bg-deep)', background: 'var(--lp-cream)', flexShrink: 0 },
+  top5Title: { display: 'block', color: 'var(--lp-text)', fontSize: 11, lineHeight: 1.2, fontWeight: 700, overflowWrap: 'anywhere' },
   detailCard: { display: 'grid', gap: 8, padding: 14, border: '1px solid rgba(215,209,176,.18)', borderRadius: 'var(--lp-radius-md)', background: 'var(--lp-panel)' },
   detailTitle: { margin: 0, color: 'var(--lp-text-soft)', fontSize: 13, lineHeight: 1.15 },
   detailHeadline: { color: 'var(--lp-text)', fontSize: 12, lineHeight: 1.25 },

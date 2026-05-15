@@ -222,10 +222,10 @@ import numpy as np
 Local modules:
 
 ```python
-from src.api_schemas import ...
+from backend.api_schemas import ...
 from src.casebook import DEFAULT_STATIC_CASEBOOK_PATH, build_casebook, render_static_casebook_html
 from src.product_demo import build_inference_run, build_archive_inference_run, SAFE_GUARDRAIL_ID
-from src.reviews import DEFAULT_REVIEW_STATUS, REVIEW_STATUSES, ReviewStore, utc_now_iso
+from backend.reviews import DEFAULT_REVIEW_STATUS, REVIEW_STATUSES, ReviewStore, utc_now_iso
 ```
 
 Tidak boleh:
@@ -1224,7 +1224,7 @@ install-python:
 	.venv/bin/pip install -r requirements.txt
 
 run-api:
-	PYTHONPATH=. .venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8888
+	PYTHONPATH=. .venv/bin/uvicorn backend.api:app --host 127.0.0.1 --port 8888
 
 inference-smoke:
 	PYTHONPATH=. .venv/bin/python scripts/inference_smoke.py
