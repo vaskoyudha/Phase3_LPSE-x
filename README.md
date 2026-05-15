@@ -1,99 +1,176 @@
 # LPSE-X Offline Procurement Risk Triage
 
 LPSE-X adalah paket demo offline untuk membantu operator memprioritaskan review
-tender pengadaan. Runtime membaca artefak model dan data lokal, menghasilkan
-antrean risiko, penjelasan faktor, casebook, dan command center web tanpa cloud
-call, live scraping, atau retraining saat aplikasi berjalan.
+tender pengadaan. Repository ini berisi artefak model, pipeline inference lokal,
+FastAPI backend, dan command center React/Vite yang semuanya berjalan tanpa
+cloud call, live scraping, atau retraining saat runtime.
 
-Output sistem harus dibaca sebagai triase risiko dan prioritas review, bukan
-tuduhan pelanggaran, bukti korupsi, atau keputusan hukum final.
+Semua output sistem harus dibaca sebagai triase risiko dan prioritas review,
+bukan tuduhan pelanggaran, bukti korupsi, atau keputusan hukum final.
 
-## Isi Repository
+## Ringkasan
 
-- `model_risk.ubj` dan `model_risk.onnx` untuk artefak model offline.
-- `train_data/` untuk training, diagnostics, calibration, HPO, dan archive
-  browsing.
-- `test_data/` untuk bukti held-out dan klaim evaluasi.
-- `src/` untuk pipeline data, fitur, model, inference, explainability,
-  narrative guardrails, dan casebook.
-- `backend/` untuk FastAPI API lokal yang membungkus adapter inference offline.
-- `frontend/` untuk command center React/Vite.
-- `tests/` untuk kontrak API, smoke test inference, guardrail narrative, dan
-  kontrak frontend.
-- `docs/` untuk catatan isi repo, rencana proyek, dan dokumentasi instalasi.
+- **Mode operasi:** offline-local.
+- **Target pengguna:** operator review, evaluator, dan reviewer teknis.
+- **Fokus utama:** scoring risiko, explainability, casebook, archive browsing,
+  dan command center web.
+- **Batasan keras:** tidak ada training, scraping, atau cloud call pada jalur
+  runtime produk.
 
-## Quickstart
+## Fitur Utama
+
+- Inference offline dari artefak `model_risk.ubj` dan `model_risk.onnx`.
+- Ranking antrean risiko untuk prioritas review.
+- Penjelasan faktor, provenance, dan casebook untuk tiap kasus.
+- Archive browsing atas data lokal dengan paginasi dan guardrail evaluasi.
+- FastAPI backend lokal untuk serving API dan static bundle frontend.
+- React/Vite command center untuk eksplorasi hasil inference.
+- Test suite untuk kontrak API, frontend contract, smoke test, dan guardrail
+  copy.
+
+## Arsitektur Tingkat Tinggi
+
+```text
+model/data lokal -> src/ pipeline inference -> backend.api -> frontend
+```
+
+Komponen utamanya:
+
+- `src/` memuat pipeline data, feature engineering, model inference,
+  explainability, narrative guardrails, dan casebook.
+- `backend/` memaparkan API lokal, caching, archive analytics, review store,
+  dan serving bundle frontend statis.
+- `frontend/` memuat command center React/Vite untuk konsumsi API.
+- `tests/` menjaga kontrak perilaku utama tetap stabil.
+
+## Struktur Repository
+
+| Path | Isi |
+| --- | --- |
+| `model_risk.ubj`, `model_risk.onnx` | Artefak model offline |
+| `train_data/` | Data training, diagnostics, calibration, HPO, archive browsing |
+| `test_data/` | Data held-out untuk klaim evaluasi |
+| `src/` | Pipeline ML, inference, explainability, casebook, narrative |
+| `backend/` | FastAPI backend lokal |
+| `frontend/` | Command center React/Vite |
+| `tests/` | Kontrak dan smoke test |
+| `docs/` | Dokumentasi instalasi, isi repo, dan rencana proyek |
+| `scripts/` | Utility script untuk smoke test dan data preparation |
+
+## Prasyarat
+
+- Python 3.10 atau lebih baru.
+- `pip` dan `venv`.
+- Node.js 20 LTS atau lebih baru.
+- `npm` yang kompatibel dengan `frontend/package-lock.json`.
+- Lingkungan lokal yang mendukung dependency Python scientific stack.
+
+## Instalasi
+
+Panduan instalasi lengkap ada di [docs/INSTALLASI.md](docs/INSTALLASI.md).
+
+Ringkasnya:
 
 ```bash
 cd BismillahFirstTry-Phase2_Tahap2_FindIT2026-ML-Inference
-
 make install-python
 make inference-smoke
-make verify-python
+make install-frontend
 ```
 
-Untuk menjalankan API lokal:
+## Menjalankan Aplikasi
+
+### 1. Jalankan API
 
 ```bash
 make run-api
 ```
 
-API dari `make run-api` berjalan di `http://127.0.0.1:8000`.
+API lokal berjalan di:
 
-Untuk menjalankan frontend Vite terhadap API tersebut:
+```text
+http://127.0.0.1:8000
+```
+
+Health endpoint:
+
+```text
+http://127.0.0.1:8000/api/health
+```
+
+### 2. Jalankan Frontend Development
 
 ```bash
 cd frontend
 LPSEX_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
 ```
 
-Dokumentasi instalasi lengkap tersedia di
-[`docs/INSTALLASI.md`](docs/INSTALLASI.md).
+Vite biasanya tersedia di:
 
-## Alur Operasional
-
-1. Siapkan environment Python dan dependency frontend.
-2. Jalankan `make inference-smoke` untuk memastikan artefak model dan data lokal
-   bisa dibaca.
-3. Jalankan `make verify-python` untuk validasi backend, inference contract, dan
-   guardrail dasar.
-4. Jalankan `make verify-frontend` jika mengubah command center web.
-5. Jalankan `make verify` sebelum menyerahkan perubahan besar.
-
-## Command Penting
-
-```bash
-make install-python      # buat .venv dan install requirements.txt
-make install-frontend    # npm ci di frontend/
-make inference-smoke     # smoke test inference offline
-make run-api             # jalankan FastAPI di 127.0.0.1:8000
-make build-frontend      # build static frontend
-make verify-python       # compileall + pytest
-make verify-frontend     # typecheck + lint + test + build frontend
-make guardrail-audit     # scan copy yang melanggar framing LPSE-X
-make verify              # seluruh verifikasi utama
+```text
+http://127.0.0.1:5173
 ```
 
-## Batasan Produk
+Catatan: default proxy Vite mengarah ke `http://127.0.0.1:8888`, jadi set
+`LPSEX_API_PROXY_TARGET` agar sesuai dengan port API yang sedang aktif.
 
-- Runtime tidak melakukan training, scraping, atau panggilan cloud.
-- Klaim evaluasi held-out hanya memakai `test_data/`.
-- `train_data/` tidak boleh dipakai untuk klaim performa held-out.
-- Archive browsing boleh memakai `train_data + test_data` hanya jika metadata
-  `source_split` dan `eval_claim_scope` tetap terbawa.
+### 3. Build Frontend Statis
+
+```bash
+make build-frontend
+```
+
+Setelah build selesai, FastAPI dapat menyajikan bundle statis dari
+`frontend/dist`.
+
+## Verifikasi
+
+Gunakan command berikut sebelum submit perubahan:
+
+```bash
+make verify-python
+make verify-frontend
+make inference-smoke
+make guardrail-audit
+make verify
+```
+
+`make verify` menjalankan seluruh cek utama yang tersedia di repository.
+
+## Environment Variables
+
+| Variable | Default | Kegunaan |
+| --- | --- | --- |
+| `LPSEX_API_PROXY_TARGET` | `http://127.0.0.1:8888` | Target proxy API untuk frontend dev/preview |
+
+## Aturan Produk
+
+- Tidak ada training, scraping, atau cloud call pada runtime.
+- `test_data/` hanya untuk held-out proof dan klaim evaluasi.
+- `train_data/` dipakai untuk training, diagnostics, calibration, HPO, atau
+  archive browsing sesuai metadata yang benar.
 - Response user-facing harus menjaga framing: triase risiko, prioritas review,
   dan bukan tuduhan pelanggaran.
-- Frontend tidak boleh menerima seluruh dataset mentah tanpa batas paginasi atau
-  filter yang jelas.
+- Frontend tidak boleh menerima seluruh dataset mentah tanpa filter dan
+  paginasi.
 
-## Struktur Dokumentasi
+## Dokumentasi Terkait
 
-- [`docs/INSTALLASI.md`](docs/INSTALLASI.md) - langkah instalasi, menjalankan
-  API/frontend, verifikasi, dan troubleshooting.
-- [`docs/ML_REPO_CONTENTS.md`](docs/ML_REPO_CONTENTS.md) - ringkasan artefak ML
-  dan konteks isi repository.
-- [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md) - alur demo produk.
-- [`PROJECT_GUIDELINES.md`](PROJECT_GUIDELINES.md) - guideline teknis proyek.
+- [docs/INSTALLASI.md](docs/INSTALLASI.md) - langkah instalasi dan menjalankan
+  aplikasi.
+- [docs/ML_REPO_CONTENTS.md](docs/ML_REPO_CONTENTS.md) - ringkasan artefak ML
+  dan isi repository.
+- [DEMO_SCRIPT.md](DEMO_SCRIPT.md) - alur demo produk.
+- [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md) - guideline teknis proyek.
+- `docs/project-plans/` - rencana implementasi backend dan frontend.
+
+## Troubleshooting Singkat
+
+- Jika `uvicorn` tidak ditemukan, aktifkan `.venv` atau jalankan lewat Makefile.
+- Jika frontend gagal memanggil API, pastikan proxy target sesuai port backend.
+- Jika `npm ci` gagal, gunakan Node.js 20 LTS dan ulangi install di `frontend/`.
+- Jika smoke test gagal, pastikan artefak model dan parquet data masih ada di
+  root repository.
 
 ## Lisensi dan Data
 
